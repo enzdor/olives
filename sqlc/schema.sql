@@ -25,17 +25,17 @@ CREATE TABLE posts (
 	image_id INT,
 	CONSTRAINT fk_post_subolive
 		FOREIGN KEY (subolive_id)
-		REFERENCES boards(subolive_id)
+		REFERENCES subolives(subolive_id)
 		ON UPDATE CASCADE
 		ON DELETE CASCADE,
 	CONSTRAINT fk_post_user
 		FOREIGN KEY (user_id)
-		REFERENCES boards(user_id)
+		REFERENCES users(user_id)
 		ON UPDATE CASCADE
 		ON DELETE CASCADE,
 	CONSTRAINT fk_post_image
 		FOREIGN KEY (image_id)
-		REFERENCES boards(image_id)
+		REFERENCES images(image_id)
 		ON UPDATE CASCADE
 		ON DELETE CASCADE
 );
@@ -49,17 +49,17 @@ CREATE TABLE comments (
 	post_id INT NOT NULL,
 	CONSTRAINT fk_comment_user
 		FOREIGN KEY (user_id)
-		REFERENCES boards(user_id)
+		REFERENCES users(user_id)
 		ON UPDATE CASCADE
 		ON DELETE CASCADE,
 	CONSTRAINT fk_comment_image
 		FOREIGN KEY (image_id)
-		REFERENCES boards(image_id)
+		REFERENCES images(image_id)
 		ON UPDATE CASCADE
 		ON DELETE CASCADE,
 	CONSTRAINT fk_comment_post
 		FOREIGN KEY (post_id)
-		REFERENCES boards(post_id)
+		REFERENCES posts(post_id)
 		ON UPDATE CASCADE
 		ON DELETE CASCADE
 );

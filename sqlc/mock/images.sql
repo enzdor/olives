@@ -1,0 +1,12 @@
+insert into images (image_id, file_path) values (1, 'AliquamEratVolutpat.avi');
+insert into images (image_id, file_path) values (2, 'VestibulumAnteIpsum.avi');
+insert into images (image_id, file_path) values (3, 'Morbi.mp3');
+insert into images (image_id, file_path) values (4, 'PraesentBlandit.tiff');
+insert into images (image_id, file_path) values (5, 'Nibh.mp3');
+insert into images (image_id, file_path) values (6, 'Penatibus.xls');
+insert into images (image_id, file_path) values (7, 'SitAmet.ppt');
+insert into images (image_id, file_path) values (8, 'AdipiscingElit.mp3');
+insert into images (image_id, file_path) values (9, 'Turpis.jpeg');
+insert into images (image_id, file_path) values (10, 'PedeUllamcorperAugue.jpeg');
+insert into images (image_id, file_path) values (11, 'JustoSit.avi');
+insert into images (image_id, file_path) values (12, 'Montes.xls');

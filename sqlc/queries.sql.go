@@ -40,11 +40,11 @@ VALUES (?, ?, ?, ?, ?)
 `
 
 type CreateCommentParams struct {
-	Text      string
-	CreatedAt time.Time
-	UserID    int32
-	ImageID   sql.NullInt32
-	PostID    int32
+	Text      string        `json:"text"`
+	CreatedAt time.Time     `json:"created_at"`
+	UserID    int32         `json:"user_id"`
+	ImageID   sql.NullInt32 `json:"image_id"`
+	PostID    int32         `json:"post_id"`
 }
 
 func (q *Queries) CreateComment(ctx context.Context, arg CreateCommentParams) (sql.Result, error) {
@@ -72,12 +72,12 @@ VALUES (?, ?, ?, ?, ?, ?)
 `
 
 type CreatePostParams struct {
-	Title      string
-	Text       string
-	CreatedAt  time.Time
-	UserID     int32
-	ImageID    sql.NullInt32
-	SuboliveID int32
+	Title      string        `json:"title"`
+	Text       string        `json:"text"`
+	CreatedAt  time.Time     `json:"created_at"`
+	UserID     int32         `json:"user_id"`
+	ImageID    sql.NullInt32 `json:"image_id"`
+	SuboliveID int32         `json:"subolive_id"`
 }
 
 func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (sql.Result, error) {
@@ -106,9 +106,9 @@ VALUES (?, ?, ?)
 `
 
 type CreateUserParams struct {
-	Email    string
-	Username string
-	Password string
+	Email    string `json:"email"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (sql.Result, error) {
@@ -143,21 +143,21 @@ LIMIT 1
 `
 
 type GetPostRow struct {
-	PostID       int32
-	Title        string
-	Text         string
-	CreatedAt    time.Time
-	SuboliveID   int32
-	UserID       int32
-	ImageID      sql.NullInt32
-	SuboliveID_2 sql.NullInt32
-	Name         sql.NullString
-	UserID_2     sql.NullInt32
-	Email        sql.NullString
-	Username     sql.NullString
-	Password     sql.NullString
-	ImageID_2    sql.NullInt32
-	FilePath     sql.NullString
+	PostID       int32          `json:"post_id"`
+	Title        string         `json:"title"`
+	Text         string         `json:"text"`
+	CreatedAt    time.Time      `json:"created_at"`
+	SuboliveID   int32          `json:"subolive_id"`
+	UserID       int32          `json:"user_id"`
+	ImageID      sql.NullInt32  `json:"image_id"`
+	SuboliveID_2 sql.NullInt32  `json:"subolive_id_2"`
+	Name         sql.NullString `json:"name"`
+	UserID_2     sql.NullInt32  `json:"user_id_2"`
+	Email        sql.NullString `json:"email"`
+	Username     sql.NullString `json:"username"`
+	Password     sql.NullString `json:"password"`
+	ImageID_2    sql.NullInt32  `json:"image_id_2"`
+	FilePath     sql.NullString `json:"file_path"`
 }
 
 func (q *Queries) GetPost(ctx context.Context, postID int32) (GetPostRow, error) {
@@ -193,21 +193,21 @@ LIMIT ?
 `
 
 type GetPostsRow struct {
-	PostID       int32
-	Title        string
-	Text         string
-	CreatedAt    time.Time
-	SuboliveID   int32
-	UserID       int32
-	ImageID      sql.NullInt32
-	SuboliveID_2 sql.NullInt32
-	Name         sql.NullString
-	UserID_2     sql.NullInt32
-	Email        sql.NullString
-	Username     sql.NullString
-	Password     sql.NullString
-	ImageID_2    sql.NullInt32
-	FilePath     sql.NullString
+	PostID       int32          `json:"post_id"`
+	Title        string         `json:"title"`
+	Text         string         `json:"text"`
+	CreatedAt    time.Time      `json:"created_at"`
+	SuboliveID   int32          `json:"subolive_id"`
+	UserID       int32          `json:"user_id"`
+	ImageID      sql.NullInt32  `json:"image_id"`
+	SuboliveID_2 sql.NullInt32  `json:"subolive_id_2"`
+	Name         sql.NullString `json:"name"`
+	UserID_2     sql.NullInt32  `json:"user_id_2"`
+	Email        sql.NullString `json:"email"`
+	Username     sql.NullString `json:"username"`
+	Password     sql.NullString `json:"password"`
+	ImageID_2    sql.NullInt32  `json:"image_id_2"`
+	FilePath     sql.NullString `json:"file_path"`
 }
 
 func (q *Queries) GetPosts(ctx context.Context, limit int32) ([]GetPostsRow, error) {
@@ -261,26 +261,26 @@ OFFSET ?
 `
 
 type GetSubolivePostsParams struct {
-	SuboliveID int32
-	Offset     int32
+	SuboliveID int32 `json:"subolive_id"`
+	Offset     int32 `json:"offset"`
 }
 
 type GetSubolivePostsRow struct {
-	PostID       int32
-	Title        string
-	Text         string
-	CreatedAt    time.Time
-	SuboliveID   int32
-	UserID       int32
-	ImageID      sql.NullInt32
-	SuboliveID_2 sql.NullInt32
-	Name         sql.NullString
-	UserID_2     sql.NullInt32
-	Email        sql.NullString
-	Username     sql.NullString
-	Password     sql.NullString
-	ImageID_2    sql.NullInt32
-	FilePath     sql.NullString
+	PostID       int32          `json:"post_id"`
+	Title        string         `json:"title"`
+	Text         string         `json:"text"`
+	CreatedAt    time.Time      `json:"created_at"`
+	SuboliveID   int32          `json:"subolive_id"`
+	UserID       int32          `json:"user_id"`
+	ImageID      sql.NullInt32  `json:"image_id"`
+	SuboliveID_2 sql.NullInt32  `json:"subolive_id_2"`
+	Name         sql.NullString `json:"name"`
+	UserID_2     sql.NullInt32  `json:"user_id_2"`
+	Email        sql.NullString `json:"email"`
+	Username     sql.NullString `json:"username"`
+	Password     sql.NullString `json:"password"`
+	ImageID_2    sql.NullInt32  `json:"image_id_2"`
+	FilePath     sql.NullString `json:"file_path"`
 }
 
 func (q *Queries) GetSubolivePosts(ctx context.Context, arg GetSubolivePostsParams) ([]GetSubolivePostsRow, error) {

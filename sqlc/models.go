@@ -10,37 +10,37 @@ import (
 )
 
 type Comment struct {
-	CommentID int32
-	Text      string
-	CreatedAt time.Time
-	UserID    int32
-	ImageID   sql.NullInt32
-	PostID    int32
+	CommentID int32         `json:"comment_id"`
+	Text      string        `json:"text"`
+	CreatedAt time.Time     `json:"created_at"`
+	UserID    int32         `json:"user_id"`
+	ImageID   sql.NullInt32 `json:"image_id"`
+	PostID    int32         `json:"post_id"`
 }
 
 type Image struct {
-	ImageID  int32
-	FilePath string
+	ImageID  int32  `json:"image_id"`
+	FilePath string `json:"file_path"`
 }
 
 type Post struct {
-	PostID     int32
-	Title      string
-	Text       string
-	CreatedAt  time.Time
-	SuboliveID int32
-	UserID     int32
-	ImageID    sql.NullInt32
+	PostID     int32         `json:"post_id"`
+	Title      string        `json:"title"`
+	Text       string        `json:"text"`
+	CreatedAt  time.Time     `json:"created_at"`
+	SuboliveID int32         `json:"subolive_id"`
+	UserID     int32         `json:"user_id"`
+	ImageID    sql.NullInt32 `json:"image_id"`
 }
 
 type Subolife struct {
-	SuboliveID int32
-	Name       string
+	SuboliveID int32  `json:"subolive_id"`
+	Name       string `json:"name"`
 }
 
 type User struct {
-	UserID   int32
-	Email    string
-	Username string
-	Password string
+	UserID   int32  `json:"user_id"`
+	Email    string `json:"email"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 }

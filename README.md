@@ -25,7 +25,7 @@ A Reddit clone. The back-end will be written in go while the front-end will be m
 
    ENDPOINT                        METHOD   DONE   Description
 
-- /getSubolivePosts/:id?page=x     GET             to get all the posts in a subolive to show in the subolive page
+- /getSubolivePosts/:id?page=x     GET             to get all the posts in a subolive to show in the subolive page (create version of this without including comments for performance or just be lazy and keep this one)
 - /getPost/:id                     GET             to see the info of a post
 - /createPost/:suboliveId          POST            to create a new post
 - /getComments/:postId             GET             to get the comments when displaying a post (i don't think this will be necessary)

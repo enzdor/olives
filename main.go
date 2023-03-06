@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/jobutterfly/olives/database"
 	"github.com/jobutterfly/olives/controllers"
+	"github.com/jobutterfly/olives/database"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
@@ -15,7 +15,7 @@ import (
 func main() {
 	errEnv := godotenv.Load()
 	if errEnv != nil {
-	    log.Fatal(errEnv)
+		log.Fatal(errEnv)
 	}
 	user := os.Getenv("DBUSER")
 	pass := os.Getenv("DBPASS")

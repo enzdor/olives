@@ -1,19 +1,24 @@
 package utils
 
 import (
-	"errors"
-	"strconv"
+	"encoding/json"
 	"math/rand"
+	"net/http"
+	"strconv"
 	"strings"
 
+	"github.com/jobutterfly/olives/consts"
 	"github.com/jobutterfly/olives/sqlc"
 )
+
+
 
 const alphabet = "abcdefghijklmnopqrstuvwxyz"
 
 type PathInfo struct {
     Id int
 }
+
 
 func GetPathValues(ps []string) (PathInfo, error){
     r := PathInfo{
@@ -22,14 +27,14 @@ func GetPathValues(ps []string) (PathInfo, error){
 
     if len(ps) > 3 {
 	if ps[3] != "" {
-	    err := errors.New("not found")
+		err := consts.PathNotFound
 	    return r, err
 	}
     }
 
     id, err := strconv.Atoi(ps[2])
     if err != nil {
-	err := errors.New("not an integer")
+	    err := consts.PathNotAnInteger
 	return r, err
     }
     r.Id = id
@@ -58,3 +63,31 @@ func RandomUser() sqlc.User {
 		Password: randomString(25),
 	}
 }
+
+func NewError(w http.ResponseWriter, status int, msg string) {
+	w.WriteHeader(status)
+	jsonBytes, err := json.Marshal(consts.ErrorMessage{Msg: msg})
+	if err != nil {
+		w.Write([]byte(consts.JsonParseError))
+		return
+	}
+	w.Write(jsonBytes)
+	return
+}
+
+func NewResponse(w http.ResponseWriter, status int, body any) {
+	w.WriteHeader(status)
+	jsonBytes, err := json.Marshal(body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(consts.JsonParseError))
+		return
+	}
+	w.Write(jsonBytes)
+	return
+}
+
+
+
+
+

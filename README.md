@@ -4,7 +4,7 @@ A Reddit clone. The back-end will be written in go while the front-end will be m
 
 ## TODO
 
-Write error response using json marhsal in controllers instead of writing string by hand
+maybe try and abstract some of the error handling?
 
 ## Dependencies Summary
 

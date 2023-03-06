@@ -2,11 +2,14 @@ package controllers
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
 	"testing"
+
+	"github.com/jobutterfly/olives/consts"
 )
 
 
@@ -30,10 +33,8 @@ func TestGetUser(t *testing.T) {
 		return
 	}
 	
-	notFoundMsg, err := json.Marshal(struct{
-		Msg string `json:"msg"`
-	}{
-		Msg: "user not found",
+	noRowMsg, err := json.Marshal(consts.ErrorMessage{
+		Msg: sql.ErrNoRows.Error(),
 	})
 	if err != nil {
 		t.Errorf("expected no errors, got %v", err)
@@ -51,7 +52,7 @@ func TestGetUser(t *testing.T) {
 		{
 			Name: "failed request for non existing user",
 			Req: httptest.NewRequest(http.MethodGet, "/users/" + strconv.Itoa(1000000), nil),
-			ExpectedRes: notFoundMsg,
+			ExpectedRes: noRowMsg,
 			ExpectedCode: http.StatusNotFound,
 		},
 	}

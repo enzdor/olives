@@ -11,37 +11,33 @@ import (
 	"github.com/jobutterfly/olives/sqlc"
 )
 
-
-
 const alphabet = "abcdefghijklmnopqrstuvwxyz"
 
 type PathInfo struct {
-    Id int
+	Id int
 }
 
-
-func GetPathValues(ps []string) (PathInfo, error){
-    r := PathInfo{
-	Id: 0,
-    }
-
-    if len(ps) > 3 {
-	if ps[3] != "" {
-		err := consts.PathNotFound
-	    return r, err
+func GetPathValues(ps []string) (PathInfo, error) {
+	r := PathInfo{
+		Id: 0,
 	}
-    }
 
-    id, err := strconv.Atoi(ps[2])
-    if err != nil {
-	    err := consts.PathNotAnInteger
+	if len(ps) > 3 {
+		if ps[3] != "" {
+			err := consts.PathNotFound
+			return r, err
+		}
+	}
+
+	id, err := strconv.Atoi(ps[2])
+	if err != nil {
+		err := consts.PathNotAnInteger
+		return r, err
+	}
+	r.Id = id
+
 	return r, err
-    }
-    r.Id = id
-
-    return r, err
 }
-
 
 func randomString(n int) string {
 	var sb strings.Builder
@@ -57,8 +53,8 @@ func randomString(n int) string {
 
 func RandomUser() sqlc.User {
 	return sqlc.User{
-		UserID: int32(rand.Intn(100)),
-		Email: randomString(25),
+		UserID:   int32(rand.Intn(100)),
+		Email:    randomString(25),
 		Username: randomString(10),
 		Password: randomString(25),
 	}
@@ -86,8 +82,3 @@ func NewResponse(w http.ResponseWriter, status int, body any) {
 	w.Write(jsonBytes)
 	return
 }
-
-
-
-
-

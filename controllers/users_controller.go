@@ -6,13 +6,14 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/jobutterfly/olives/sqlc"
 	"github.com/jobutterfly/olives/utils"
 )
 
 func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 	v, err := utils.GetPathValues(strings.Split(r.URL.Path, "/"))
 	if err != nil {
-		utils.NewError(w, http.StatusInternalServerError, err.Error())
+		utils.NewError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -30,3 +31,33 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 	utils.NewResponse(w, http.StatusOK, user)
 	return
 }
+
+func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
+	user, err := h.q.CreateUser(context.Background(), sqlc.CreateUserParams{
+		Username: r.FormValue("username"),
+		Email: r.FormValue("email"),
+		Password: r.FormValue("password"),
+	})
+	if err != nil {
+		utils.NewError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	utils.NewResponse(w, http.StatusCreated, user)
+	return
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/jobutterfly/olives/consts"
 	"github.com/jobutterfly/olives/sqlc"
@@ -42,6 +43,7 @@ func GetPathValues(ps []string) (PathInfo, error) {
 func randomString(n int) string {
 	var sb strings.Builder
 	k := len(alphabet)
+	rand.Seed(time.Now().Unix())
 
 	for i := 0; i < n; i++ {
 		c := alphabet[rand.Intn(k)]
@@ -52,9 +54,10 @@ func randomString(n int) string {
 }
 
 func RandomUser() sqlc.User {
+	rand.Seed(time.Now().Unix())
 	return sqlc.User{
 		UserID:   int32(rand.Intn(100)),
-		Email:    randomString(25),
+		Email:    randomString(5) + "@" + randomString(6) + ".com",
 		Username: randomString(10),
 		Password: randomString(25),
 	}

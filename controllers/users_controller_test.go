@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/jobutterfly/olives/consts"
-	"github.com/jobutterfly/olives/sqlc"
+	"github.com/jobutterfly/olives/utils"
 )
 
 func TestGetUser(t *testing.T) {
@@ -74,14 +74,7 @@ func TestGetUser(t *testing.T) {
 }
 
 func TestCreateUser(t *testing.T) {
-
-	createdUser := sqlc.User{
-		UserID:   int32(101),
-		Username: "banana",
-		Email:    "banana@tree.com",
-		Password: "supersecret",
-	}
-
+	createdUser := utils.RandomUser()
 	jsonUser, err := json.Marshal(createdUser)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)

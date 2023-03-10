@@ -48,8 +48,13 @@ SELECT * FROM users
 WHERE user_id = ?
 LIMIT 1;
 
+-- name: GetUserByEmail :one
+SELECT * FROM users
+WHERE email = ?
+LIMIT 1;
+
 -- name: CreateUser :execresult
-INSERT INTO users(email, username, password)
+INSERT INTO users (email, username, password)
 VALUES (?, ?, ?);
 
 -- name: DeleteUser :execresult

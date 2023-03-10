@@ -33,7 +33,7 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
-	user, err := h.q.CreateUser(context.Background(), sqlc.CreateUserParams{
+	_, err := h.q.CreateUser(context.Background(), sqlc.CreateUserParams{
 		Username: r.FormValue("username"),
 		Email: r.FormValue("email"),
 		Password: r.FormValue("password"),
@@ -41,6 +41,11 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		utils.NewError(w, http.StatusInternalServerError, err.Error())
 		return
+	}
+
+	user, err := h.q.GetUserByEmail(context.Background(), r.FormValue("email"))
+	if err != nil {
+		utils.NewError(w, http.StatusInternalServerError, err.Error())
 	}
 
 	utils.NewResponse(w, http.StatusCreated, user)

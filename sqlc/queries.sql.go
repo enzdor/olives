@@ -101,7 +101,7 @@ func (q *Queries) CreateSubolive(ctx context.Context, name string) (sql.Result, 
 }
 
 const createUser = `-- name: CreateUser :execresult
-INSERT INTO users(email, username, password)
+INSERT INTO users (email, username, password)
 VALUES (?, ?, ?)
 `
 
@@ -357,6 +357,24 @@ LIMIT 1
 
 func (q *Queries) GetUser(ctx context.Context, userID int32) (User, error) {
 	row := q.db.QueryRowContext(ctx, getUser, userID)
+	var i User
+	err := row.Scan(
+		&i.UserID,
+		&i.Email,
+		&i.Username,
+		&i.Password,
+	)
+	return i, err
+}
+
+const getUserByEmail = `-- name: GetUserByEmail :one
+SELECT user_id, email, username, password FROM users
+WHERE email = ?
+LIMIT 1
+`
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserByEmail, email)
 	var i User
 	err := row.Scan(
 		&i.UserID,

@@ -53,6 +53,12 @@ SELECT * FROM users
 WHERE email = ?
 LIMIT 1;
 
+-- name: GetNewestUser :one
+SELECT * FROM users
+WHERE user_id = (
+	SELECT MAX(user_id) FROM users
+);
+
 -- name: CreateUser :execresult
 INSERT INTO users (email, username, password)
 VALUES (?, ?, ?);

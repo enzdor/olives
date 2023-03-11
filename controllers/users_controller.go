@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/jobutterfly/olives/consts"
 	"github.com/jobutterfly/olives/sqlc"
 	"github.com/jobutterfly/olives/utils"
 )
@@ -32,11 +33,31 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+/*
+	TODO: Add validation for form values
+*/
+
 func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
+	email := strings.TrimSpace(r.FormValue("email"))
+	username := strings.TrimSpace(r.FormValue("username"))
+	password := strings.TrimSpace(r.FormValue("password"))
+	errs, valid := utils.ValidateNewUser(email, username, password)
+	if !valid {
+		utils.NewErrorBody(w, http.StatusUnprocessableEntity, consts.ResCreateUser{
+			User: sqlc.User {
+				UserID: 0,
+				Email: email,
+				Username: username,
+				Password: "",
+			},
+			Errors: errs,
+		})
+		return
+	}
 	_, err := h.q.CreateUser(context.Background(), sqlc.CreateUserParams{
-		Username: r.FormValue("username"),
-		Email: r.FormValue("email"),
-		Password: r.FormValue("password"),
+		Email: email,
+		Username: username,
+		Password: password,
 	})
 	if err != nil {
 		utils.NewError(w, http.StatusInternalServerError, err.Error())
@@ -48,7 +69,26 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		utils.NewError(w, http.StatusInternalServerError, err.Error())
 	}
 
-	utils.NewResponse(w, http.StatusCreated, user)
+	utils.NewResponse(w, http.StatusCreated, consts.ResCreateUser{
+		User: user,
+		Errors: [3]consts.FormInputError {
+			{
+				Bool: false,
+				Message: "",
+				Field: "email",
+			},
+			{
+				Bool: false,
+				Message: "",
+				Field: "username",
+			},
+			{
+				Bool: false,
+				Message: "",
+				Field: "password",
+			},
+		},
+	})
 	return
 }
 

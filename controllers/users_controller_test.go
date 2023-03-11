@@ -73,15 +73,51 @@ func TestGetUser(t *testing.T) {
 	TestGet(t, testCases, Th.GetUser)
 }
 
+/*
+	FIXME: instead of checking with createdUser, query the testdb for the 
+	latest created user use it to check if res is correct. the problem is
+	that the id of the created user is different from the one actually 
+	created
+*/
+
 func TestCreateUser(t *testing.T) {
-	createdUser := utils.RandomUser()
-	jsonUser, err := json.Marshal(createdUser)
+	newestUser, err := Th.q.GetNewestUser(context.Background())
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 		return
 	}
 
-	firstBody := bytes.NewReader([]byte("username=" + createdUser.Username + "&email=" + createdUser.Email + "&password=" + createdUser.Password))
+	newUser := utils.RandomUser()
+	newUser.UserID = newestUser.UserID + 1
+
+	expectedRes := consts.ResCreateUser {
+		User: newUser,
+		Errors: [3]consts.FormInputError{
+			{
+				Bool: false,
+				Message: "",
+				Field: "email",
+			},
+			{
+				Bool: false,
+				Message: "",
+				Field: "username",
+
+			},
+			{
+				Bool: false,
+				Message: "",
+				Field: "password",
+			},
+		},
+	}
+	jsonRes, err := json.Marshal(expectedRes)
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+
+	firstBody := bytes.NewReader([]byte("username=" + newUser.Username + "&email=" + newUser.Email + "&password=" + newUser.Password))
 	firstReq := httptest.NewRequest(http.MethodPost, "/users", firstBody)
 	firstReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
@@ -89,7 +125,7 @@ func TestCreateUser(t *testing.T) {
 		{
 			Name:         "successful create user request",
 			Req:          firstReq,
-			ExpectedRes:  jsonUser,
+			ExpectedRes:  jsonRes,
 			ExpectedCode: http.StatusCreated,
 		},
 	}

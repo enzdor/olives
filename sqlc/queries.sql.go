@@ -133,6 +133,25 @@ func (q *Queries) DeleteUser(ctx context.Context, userID int32) (sql.Result, err
 	return q.db.ExecContext(ctx, deleteUser, userID)
 }
 
+const getNewestUser = `-- name: GetNewestUser :one
+SELECT user_id, email, username, password FROM users
+WHERE user_id = (
+	SELECT MAX(user_id) FROM users
+)
+`
+
+func (q *Queries) GetNewestUser(ctx context.Context) (User, error) {
+	row := q.db.QueryRowContext(ctx, getNewestUser)
+	var i User
+	err := row.Scan(
+		&i.UserID,
+		&i.Email,
+		&i.Username,
+		&i.Password,
+	)
+	return i, err
+}
+
 const getPost = `-- name: GetPost :one
 SELECT post_id, title, text, created_at, posts.subolive_id, posts.user_id, posts.image_id, subolives.subolive_id, name, users.user_id, email, username, password, images.image_id, file_path FROM posts
 LEFT JOIN subolives ON posts.subolive_id = subolives.subolive_id

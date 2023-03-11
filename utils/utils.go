@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"math/rand"
 	"net/http"
+	"net/mail"
 	"strconv"
 	"strings"
 	"time"
@@ -74,6 +75,18 @@ func NewError(w http.ResponseWriter, status int, msg string) {
 	return
 }
 
+func NewErrorBody(w http.ResponseWriter, status int, body any) {
+	w.WriteHeader(status)
+	jsonBytes, err := json.Marshal(body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(consts.JsonParseError))
+		return
+	}
+	w.Write(jsonBytes)
+	return
+}
+
 func NewResponse(w http.ResponseWriter, status int, body any) {
 	w.WriteHeader(status)
 	jsonBytes, err := json.Marshal(body)
@@ -85,3 +98,64 @@ func NewResponse(w http.ResponseWriter, status int, body any) {
 	w.Write(jsonBytes)
 	return
 }
+
+// TODO: return object of errors for frontend
+
+func ValidateNewUser(email string, username string, password string) (errs [3]consts.FormInputError, valid bool) {
+	valid = true
+	errs = [3]consts.FormInputError{
+		{
+			Bool: false,
+			Message: "",
+			Field: "email",
+		},
+		{
+			Bool: false,
+			Message: "",
+			Field: "username",
+		},
+		{
+			Bool: false,
+			Message: "",
+			Field: "password",
+		},
+	}
+
+	_, err := mail.ParseAddress(email)
+	if err != nil {
+		errs[0].Bool = true
+		errs[0].Message = "Invalid email address"
+		valid = false
+	}
+
+	if username == "" {
+		errs[1].Bool = true
+		errs[1].Message = "This field is required"
+		valid = false
+	}
+
+	if len(username) < 5 {
+		errs[1].Bool = true
+		errs[1].Message = "This field must be greater than 6 characters"
+		valid = false
+	}
+
+	if password == "" {
+		errs[2].Bool = true
+		errs[2].Message = "This field is required"
+		valid = false
+	}
+
+	if len(password) < 5 {
+		errs[2].Bool = true
+		errs[2].Message = "This field must be greater than 6 characters"
+		valid = false
+	}
+
+	return errs, valid
+}
+
+
+
+
+

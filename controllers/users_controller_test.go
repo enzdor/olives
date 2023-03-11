@@ -166,6 +166,7 @@ func TestCreateUser(t *testing.T) {
 
 	testCases := []PostTestCase{
 		{
+			// FIXME: not passing
 			Name:         "successful create user request",
 			Req:          firstReq,
 			ExpectedRes:  firstJsonRes,

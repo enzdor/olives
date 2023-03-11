@@ -27,18 +27,18 @@ check request method before executing handler
 
 ## Back-end endpoints
 
-   ENDPOINT                        METHOD   DONE   Description
+   ENDPOINT                        METHOD   HANDLER  DONE   Description
 
-- /getSubolivePosts/:id?page=x     GET             to get all the posts in a subolive to show in the subolive page (create version of this without including comments for performance or just be lazy and keep this one)
-- /getPost/:id                     GET             to see the info of a post
-- /createPost/:suboliveId          POST            to create a new post
-- /getComments/:postId             GET             to get the comments when displaying a post (i don't think this will be necessary)
-- /createComment/:postId           POST            to create a comment
-- /getUser/:userId                 GET             to get user info
-- /createUser                      POST            to create a new user
-- /deleteUser/:userId              POST            to delete an existent user
-- /login                           POST            to login
-- /logout                          GET             to logout
+- /getSubolivePosts/:id?page=x     GET                       to get all the posts in a subolive to show in the subolive page (create version of this without including comments for performance or just be lazy and keep this one)
+- /getPost/:id                     GET                       to see the info of a post
+- /createPost/:suboliveId          POST                      to create a new post
+- /getComments/:postId             GET                       to get the comments when displaying a post (i don't think this will be necessary)
+- /createComment/:postId           POST                      to create a comment
+- /getUser/:userId                 GET       done            to get user info
+- /createUser                      POST      done            to create a new user
+- /deleteUser/:userId              POST      done            to delete an existent user
+- /login                           POST                      to login
+- /logout                          GET                       to logout
 
 ## Back-end helper functions
 

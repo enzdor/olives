@@ -24,8 +24,10 @@ func main() {
 	db := database.NewDB(user, pass, name)
 	h := controllers.NewHandler(db, "jwtkey")
 
-	http.HandleFunc("/users/", h.GetUser)
+	http.HandleFunc("/users/", h.GetOrDeleteUser)
 	http.HandleFunc("/users", h.CreateUser)
+
+	http.HandleFunc("/posts/", h.GetPost)
 
 	log.Print("Listiening on port :8080")
 	if err := http.ListenAndServe(":8080", nil); err != nil {

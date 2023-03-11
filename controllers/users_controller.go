@@ -11,6 +11,20 @@ import (
 	"github.com/jobutterfly/olives/utils"
 )
 
+func (h *Handler) GetOrDeleteUser(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "DELETE":
+		h.DeleteUser(w, r)
+		return
+	case "GET":
+		h.GetUser(w, r)
+		return
+	default:
+		utils.NewError(w, http.StatusMethodNotAllowed, "this method is not allowed: " + r.Method)
+	}
+
+}
+
 func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 	v, err := utils.GetPathValues(strings.Split(r.URL.Path, "/"))
 	if err != nil {

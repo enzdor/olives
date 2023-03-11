@@ -193,3 +193,52 @@ func TestCreateUser(t *testing.T) {
 
 	TestPost(t, testCases, Th.CreateUser)
 }
+
+func TestDeleteUser(t *testing.T) {
+	newestUser, err := Th.q.GetNewestUser(context.Background())
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+	firstReq := httptest.NewRequest(http.MethodDelete, "/users/" + strconv.Itoa(int(newestUser.UserID)), nil)
+	firstRes, err := json.Marshal("")
+	secondReq := httptest.NewRequest(http.MethodDelete, "/users/" + strconv.Itoa(1000000), nil)
+
+	noRowMsg, err := json.Marshal(consts.ErrorMessage{
+		Msg: sql.ErrNoRows.Error(),
+	})
+	if err != nil {
+		t.Errorf("expected no errors, got %v", err)
+		return
+	}
+
+	testCases := []GetTestCase {
+		{
+			Name: "successful delete of user",
+			Req: firstReq,
+			ExpectedRes: firstRes,
+			ExpectedCode: http.StatusOK,
+		},
+		{
+			Name: "failed request for non existing user",
+			Req: secondReq,
+			ExpectedRes: noRowMsg,
+			ExpectedCode: http.StatusNotFound,
+		},
+	}
+
+	TestGet(t, testCases, Th.DeleteUser)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

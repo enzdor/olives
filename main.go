@@ -28,6 +28,7 @@ func main() {
 	http.HandleFunc("/users", h.CreateUser)
 
 	http.HandleFunc("/posts/", h.GetPost)
+	http.HandleFunc("/posts/subolive/", h.GetSubolivePosts)
 
 	log.Print("Listiening on port :8080")
 	if err := http.ListenAndServe(":8080", nil); err != nil {

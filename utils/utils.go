@@ -19,19 +19,19 @@ type PathInfo struct {
 	Id int
 }
 
-func GetPathValues(ps []string) (PathInfo, error) {
+func GetPathValues(ps []string, offset int) (PathInfo, error) {
 	r := PathInfo{
 		Id: 0,
 	}
 
-	if len(ps) > 3 {
-		if ps[3] != "" {
+	if len(ps) > 3 + offset {
+		if ps[3 + offset] != "" {
 			err := consts.PathNotFound
 			return r, err
 		}
 	}
 
-	id, err := strconv.Atoi(ps[2])
+	id, err := strconv.Atoi(ps[2 + offset])
 	if err != nil {
 		err := consts.PathNotAnInteger
 		return r, err

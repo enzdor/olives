@@ -26,7 +26,7 @@ func (h *Handler) GetOrDeleteUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
-	v, err := utils.GetPathValues(strings.Split(r.URL.Path, "/"))
+	v, err := utils.GetPathValues(strings.Split(r.URL.Path, "/"), 0)
 	if err != nil {
 		utils.NewError(w, http.StatusBadRequest, err.Error())
 		return
@@ -87,7 +87,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
-	v, err := utils.GetPathValues(strings.Split(r.URL.Path, "/"))
+	v, err := utils.GetPathValues(strings.Split(r.URL.Path, "/"), 0)
 	if err != nil {
 		utils.NewError(w, http.StatusBadRequest, err.Error())
 		return

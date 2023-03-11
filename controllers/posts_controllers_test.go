@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/jobutterfly/olives/consts"
+	"github.com/jobutterfly/olives/sqlc"
 )
 
 func TestGetPost(t *testing.T) {
@@ -70,3 +71,73 @@ func TestGetPost(t *testing.T) {
 
 	TestGet(t, testCases, Th.GetPost)
 }
+
+func TestGetSubolivePosts(t *testing.T) {
+	suboliveId := int32(2)
+	firstPosts, err := Th.q.GetSubolivePosts(context.Background(), sqlc.GetSubolivePostsParams{
+		Offset: 0,
+		SuboliveID: suboliveId,
+	})
+	if err != nil {
+		t.Errorf("expected no errors, got %v", err)
+		return
+	}
+
+	firstJsonPosts, err := json.Marshal(firstPosts)
+	if err != nil {
+		t.Errorf("expected no errors, got %v", err)
+		return
+	}
+
+	secondPosts, err := Th.q.GetSubolivePosts(context.Background(), sqlc.GetSubolivePostsParams{
+		Offset: 10,
+		SuboliveID: suboliveId,
+	})
+	if err != nil {
+		t.Errorf("expected no errors, got %v", err)
+		return
+	}
+
+	secondJsonPosts, err := json.Marshal(secondPosts)
+	if err != nil {
+		t.Errorf("expected no errors, got %v", err)
+		return
+	}
+
+	// FIXME: responses are all fucked up because of includes
+
+	testCases := []GetTestCase{
+		{
+			Name:         "successful get post request",
+			Req:          httptest.NewRequest(http.MethodGet, "/posts/subolive/"+strconv.Itoa(int(suboliveId))+"?page=0", nil),
+			ExpectedRes:  secondJsonPosts,
+			ExpectedCode: http.StatusOK,
+		},
+		{
+			Name:         "successful get post request second page",
+			Req:          httptest.NewRequest(http.MethodGet, "/posts/subolive/"+strconv.Itoa(int(suboliveId))+"?page=1", nil),
+			ExpectedRes:  firstJsonPosts,
+			ExpectedCode: http.StatusOK,
+		},
+	}
+
+	TestGet(t, testCases, Th.GetSubolivePosts)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

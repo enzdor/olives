@@ -7,3 +7,4 @@ type ResCreateUser struct {
 	Errors [3]FormInputError `json:"errors"`
 }
 
+const ITEMS_PER_PAGE = 10

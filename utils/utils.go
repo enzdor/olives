@@ -103,23 +103,7 @@ func NewResponse(w http.ResponseWriter, status int, body any) {
 
 func ValidateNewUser(email string, username string, password string) (errs [3]consts.FormInputError, valid bool) {
 	valid = true
-	errs = [3]consts.FormInputError{
-		{
-			Bool: false,
-			Message: "",
-			Field: "email",
-		},
-		{
-			Bool: false,
-			Message: "",
-			Field: "username",
-		},
-		{
-			Bool: false,
-			Message: "",
-			Field: "password",
-		},
-	}
+	errs = consts.EmptyCreateUserErrors
 
 	_, err := mail.ParseAddress(email)
 	if err != nil {

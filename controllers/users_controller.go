@@ -71,23 +71,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	utils.NewResponse(w, http.StatusCreated, consts.ResCreateUser{
 		User: user,
-		Errors: [3]consts.FormInputError {
-			{
-				Bool: false,
-				Message: "",
-				Field: "email",
-			},
-			{
-				Bool: false,
-				Message: "",
-				Field: "username",
-			},
-			{
-				Bool: false,
-				Message: "",
-				Field: "password",
-			},
-		},
+		Errors: consts.EmptyCreateUserErrors,
 	})
 	return
 }

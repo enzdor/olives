@@ -20,3 +20,20 @@ type FormInputError struct {
 	Field string `json:"field"`
 }
 
+var EmptyCreateUserErrors = [3]FormInputError {
+	{
+		Bool: false,
+		Message: "",
+		Field: "email",
+	},
+	{
+		Bool: false,
+		Message: "",
+		Field: "username",
+	},
+	{
+		Bool: false,
+		Message: "",
+		Field: "password",
+	},
+}

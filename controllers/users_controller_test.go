@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/jobutterfly/olives/consts"
+	"github.com/jobutterfly/olives/sqlc"
 	"github.com/jobutterfly/olives/utils"
 )
 
@@ -73,13 +74,6 @@ func TestGetUser(t *testing.T) {
 	TestGet(t, testCases, Th.GetUser)
 }
 
-/*
-	FIXME: instead of checking with createdUser, query the testdb for the 
-	latest created user use it to check if res is correct. the problem is
-	that the id of the created user is different from the one actually 
-	created
-*/
-
 func TestCreateUser(t *testing.T) {
 	newestUser, err := Th.q.GetNewestUser(context.Background())
 	if err != nil {
@@ -90,28 +84,11 @@ func TestCreateUser(t *testing.T) {
 	newUser := utils.RandomUser()
 	newUser.UserID = newestUser.UserID + 1
 
-	expectedRes := consts.ResCreateUser {
+	firstExpectedRes := consts.ResCreateUser {
 		User: newUser,
-		Errors: [3]consts.FormInputError{
-			{
-				Bool: false,
-				Message: "",
-				Field: "email",
-			},
-			{
-				Bool: false,
-				Message: "",
-				Field: "username",
-
-			},
-			{
-				Bool: false,
-				Message: "",
-				Field: "password",
-			},
-		},
+		Errors: consts.EmptyCreateUserErrors,
 	}
-	jsonRes, err := json.Marshal(expectedRes)
+	firstJsonRes, err := json.Marshal(firstExpectedRes)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 		return
@@ -121,12 +98,96 @@ func TestCreateUser(t *testing.T) {
 	firstReq := httptest.NewRequest(http.MethodPost, "/users", firstBody)
 	firstReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
+	secondUser := newUser
+	secondUser.Email = "notanemail"
+	secErrs, _ := utils.ValidateNewUser(secondUser.Email, secondUser.Username, secondUser.Password)
+	secondExpectedRes := consts.ResCreateUser {
+		User: sqlc.User{
+			UserID: 0,
+			Email: secondUser.Email,
+			Username: secondUser.Username,
+			Password: "",
+		},
+		Errors: secErrs,
+	}
+	secondJsonRes, err := json.Marshal(secondExpectedRes)
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+
+	secondBody := bytes.NewReader([]byte("username=" + secondUser.Username + "&email=" + secondUser.Email + "&password=" + secondUser.Password))
+	secondReq := httptest.NewRequest(http.MethodPost, "/users", secondBody)
+	secondReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	thirdUser := newUser
+	thirdUser.Username = "shor"
+	thirdErrs, _ := utils.ValidateNewUser(thirdUser.Email, thirdUser.Username, thirdUser.Password)
+	thirdExpectedRes := consts.ResCreateUser {
+		User: sqlc.User{
+			UserID: 0,
+			Email: thirdUser.Email,
+			Username: thirdUser.Username,
+			Password: "",
+		},
+		Errors: thirdErrs,
+	}
+	thirdJsonRes, err := json.Marshal(thirdExpectedRes)
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+
+	thirdBody := bytes.NewReader([]byte("username=" + thirdUser.Username + "&email=" + thirdUser.Email + "&password=" + thirdUser.Password))
+	thirdReq := httptest.NewRequest(http.MethodPost, "/users", thirdBody)
+	thirdReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	fourthUser := newUser
+	fourthUser.Password = "shor"
+	fourthErrs, _ := utils.ValidateNewUser(fourthUser.Email, fourthUser.Username, fourthUser.Password)
+	fourthExpectedRes := consts.ResCreateUser {
+		User: sqlc.User{
+			UserID: 0,
+			Email: fourthUser.Email,
+			Username: fourthUser.Username,
+			Password: "",
+		},
+		Errors: fourthErrs,
+	}
+	fourthJsonRes, err := json.Marshal(fourthExpectedRes)
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+
+	fourthBody := bytes.NewReader([]byte("username=" + fourthUser.Username + "&email=" + fourthUser.Email + "&password=" + fourthUser.Password))
+	fourthReq := httptest.NewRequest(http.MethodPost, "/users", fourthBody)
+	fourthReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
 	testCases := []PostTestCase{
 		{
 			Name:         "successful create user request",
 			Req:          firstReq,
-			ExpectedRes:  jsonRes,
+			ExpectedRes:  firstJsonRes,
 			ExpectedCode: http.StatusCreated,
+		},
+		{
+			Name:         "invalid email user request",
+			Req:          secondReq,
+			ExpectedRes:  secondJsonRes,
+			ExpectedCode: http.StatusUnprocessableEntity,
+		},
+		{
+			Name:         "invalid username user request",
+			Req:          thirdReq,
+			ExpectedRes:  thirdJsonRes,
+			ExpectedCode: http.StatusUnprocessableEntity,
+		},
+		{
+			Name:         "invalid password user request",
+			Req:          fourthReq,
+			ExpectedRes:  fourthJsonRes,
+			ExpectedCode: http.StatusUnprocessableEntity,
 		},
 	}
 

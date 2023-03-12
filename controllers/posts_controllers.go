@@ -41,6 +41,11 @@ func (h *Handler) GetSubolivePosts(w http.ResponseWriter, r *http.Request) {
 		utils.NewError(w, http.StatusBadRequest, err.Error())
 		return
 	}
+	
+	if v.Id > 5 {
+		utils.NewError(w, http.StatusNotFound, consts.SuboliveNonExistant.Error())
+		return
+	}
 
 	queryPage := r.URL.Query().Get("page")
 	var page int
@@ -49,7 +54,7 @@ func (h *Handler) GetSubolivePosts(w http.ResponseWriter, r *http.Request) {
 	} else {
 		intPage, err := strconv.Atoi(queryPage)
 		if err != nil {
-			utils.NewError(w, http.StatusInternalServerError, "error when getting page number")
+			utils.NewError(w, http.StatusInternalServerError, consts.PageNotAnInteger.Error())
 			return
 		}
 		page = intPage
@@ -61,7 +66,17 @@ func (h *Handler) GetSubolivePosts(w http.ResponseWriter, r *http.Request) {
 		SuboliveID: int32(v.Id),
 	})
 	if err != nil {
+		if err == sql.ErrNoRows {
+			utils.NewError(w, http.StatusNotFound, err.Error())
+			return
+		}
+
 		utils.NewError(w, http.StatusInternalServerError, "error when getting posts")
+		return
+	}
+
+	if len(posts) < 1 {
+		utils.NewError(w, http.StatusNotFound, sql.ErrNoRows.Error())
 		return
 	}
 

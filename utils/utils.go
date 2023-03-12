@@ -139,7 +139,3 @@ func ValidateNewUser(email string, username string, password string) (errs [3]co
 	return errs, valid
 }
 
-
-
-
-

@@ -104,20 +104,70 @@ func TestGetSubolivePosts(t *testing.T) {
 		return
 	}
 
-	// FIXME: responses are all fucked up because of includes
+	noRowMsg, err := json.Marshal(consts.ErrorMessage{
+		Msg: sql.ErrNoRows.Error(),
+	})
+
+	notAnInt, err := json.Marshal(consts.ErrorMessage{
+		Msg: consts.PathNotAnInteger.Error(),
+	})
+	if err != nil {
+		t.Errorf("expected no errors, got %v", err)
+		return
+	}
+
+	pageNotAnInt, err := json.Marshal(consts.ErrorMessage{
+		Msg: consts.PageNotAnInteger.Error(),
+	})
+	if err != nil {
+		t.Errorf("expected no errors, got %v", err)
+		return
+	}
+
+	suboliveNonExistant, err := json.Marshal(consts.ErrorMessage{
+		Msg: consts.SuboliveNonExistant.Error(),
+	})
+	if err != nil {
+		t.Errorf("expected no errors, got %v", err)
+		return
+	}
 
 	testCases := []GetTestCase{
 		{
-			Name:         "successful get post request",
+			Name:         "successful get posts request",
 			Req:          httptest.NewRequest(http.MethodGet, "/posts/subolive/"+strconv.Itoa(int(suboliveId))+"?page=0", nil),
+			ExpectedRes:  firstJsonPosts,
+			ExpectedCode: http.StatusOK,
+		},
+		{
+			Name:         "successful get posts request second page",
+			Req:          httptest.NewRequest(http.MethodGet, "/posts/subolive/"+strconv.Itoa(int(suboliveId))+"?page=1", nil),
 			ExpectedRes:  secondJsonPosts,
 			ExpectedCode: http.StatusOK,
 		},
 		{
-			Name:         "successful get post request second page",
-			Req:          httptest.NewRequest(http.MethodGet, "/posts/subolive/"+strconv.Itoa(int(suboliveId))+"?page=1", nil),
-			ExpectedRes:  firstJsonPosts,
-			ExpectedCode: http.StatusOK,
+			Name:         "unsuccessful get posts request subolive id not number",
+			Req:          httptest.NewRequest(http.MethodGet, "/posts/subolive/banana?page=1", nil),
+			ExpectedRes:  notAnInt,
+			ExpectedCode: http.StatusBadRequest,
+		},
+		{
+			Name:         "unsuccessful get posts request subolive id not exist",
+			Req:          httptest.NewRequest(http.MethodGet, "/posts/subolive/"+strconv.Itoa(int(10000))+"?page=1", nil),
+			ExpectedRes:  suboliveNonExistant,
+			ExpectedCode: http.StatusNotFound,
+		},
+		{
+			Name:         "unsuccessful get posts request not existant page",
+			Req:          httptest.NewRequest(http.MethodGet, "/posts/subolive/"+strconv.Itoa(int(suboliveId))+"?page=1000", nil),
+			ExpectedRes:  noRowMsg,
+			ExpectedCode: http.StatusNotFound,
+		},
+		{
+			Name:         "unsuccessful get posts request page not int",
+			Req:          httptest.NewRequest(http.MethodGet, "/posts/subolive/"+strconv.Itoa(int(suboliveId))+"?page=banana", nil),
+			ExpectedRes:  pageNotAnInt,
+			ExpectedCode: http.StatusInternalServerError,
 		},
 	}
 

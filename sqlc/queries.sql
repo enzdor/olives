@@ -1,5 +1,17 @@
 -- name: GetPosts :many
-SELECT * FROM posts
+SELECT posts.post_id, 
+	posts.title, 
+	posts.text, 
+	posts.created_at, 
+	posts.subolive_id, 
+	subolives.name, 
+	posts.image_id, 
+	images.file_path, 
+	posts.user_id, 
+	users.username, 
+	users.email, 
+	users.password 
+FROM posts
 LEFT JOIN subolives ON posts.subolive_id = subolives.subolive_id
 LEFT JOIN users ON posts.user_id = users.user_id
 LEFT JOIN images ON posts.image_id = images.image_id
@@ -7,7 +19,19 @@ ORDER BY created_at ASC
 LIMIT ?;
 
 -- name: GetPost :one
-SELECT * FROM posts
+SELECT posts.post_id, 
+	posts.title, 
+	posts.text, 
+	posts.created_at, 
+	posts.subolive_id, 
+	subolives.name, 
+	posts.image_id, 
+	images.file_path, 
+	posts.user_id, 
+	users.username, 
+	users.email, 
+	users.password 
+FROM posts
 LEFT JOIN subolives ON posts.subolive_id = subolives.subolive_id
 LEFT JOIN users ON posts.user_id = users.user_id
 LEFT JOIN images ON posts.image_id = images.image_id
@@ -15,7 +39,19 @@ WHERE post_id = ?
 LIMIT 1;
 
 -- name: GetSubolivePosts :many
-SELECT * FROM posts
+SELECT posts.post_id, 
+	posts.title, 
+	posts.text, 
+	posts.created_at, 
+	posts.subolive_id, 
+	subolives.name, 
+	posts.image_id, 
+	images.file_path, 
+	posts.user_id, 
+	users.username, 
+	users.email, 
+	users.password 
+FROM posts
 LEFT JOIN subolives ON posts.subolive_id = subolives.subolive_id
 LEFT JOIN users ON posts.user_id = users.user_id
 LEFT JOIN images ON posts.image_id = images.image_id

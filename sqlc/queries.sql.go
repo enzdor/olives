@@ -153,7 +153,19 @@ func (q *Queries) GetNewestUser(ctx context.Context) (User, error) {
 }
 
 const getPost = `-- name: GetPost :one
-SELECT post_id, title, text, created_at, posts.subolive_id, posts.user_id, posts.image_id, subolives.subolive_id, name, users.user_id, email, username, password, images.image_id, file_path FROM posts
+SELECT posts.post_id, 
+	posts.title, 
+	posts.text, 
+	posts.created_at, 
+	posts.subolive_id, 
+	subolives.name, 
+	posts.image_id, 
+	images.file_path, 
+	posts.user_id, 
+	users.username, 
+	users.email, 
+	users.password 
+FROM posts
 LEFT JOIN subolives ON posts.subolive_id = subolives.subolive_id
 LEFT JOIN users ON posts.user_id = users.user_id
 LEFT JOIN images ON posts.image_id = images.image_id
@@ -162,21 +174,18 @@ LIMIT 1
 `
 
 type GetPostRow struct {
-	PostID       int32          `json:"post_id"`
-	Title        string         `json:"title"`
-	Text         string         `json:"text"`
-	CreatedAt    time.Time      `json:"created_at"`
-	SuboliveID   int32          `json:"subolive_id"`
-	UserID       int32          `json:"user_id"`
-	ImageID      sql.NullInt32  `json:"image_id"`
-	SuboliveID_2 sql.NullInt32  `json:"subolive_id_2"`
-	Name         sql.NullString `json:"name"`
-	UserID_2     sql.NullInt32  `json:"user_id_2"`
-	Email        sql.NullString `json:"email"`
-	Username     sql.NullString `json:"username"`
-	Password     sql.NullString `json:"password"`
-	ImageID_2    sql.NullInt32  `json:"image_id_2"`
-	FilePath     sql.NullString `json:"file_path"`
+	PostID     int32          `json:"post_id"`
+	Title      string         `json:"title"`
+	Text       string         `json:"text"`
+	CreatedAt  time.Time      `json:"created_at"`
+	SuboliveID int32          `json:"subolive_id"`
+	Name       sql.NullString `json:"name"`
+	ImageID    sql.NullInt32  `json:"image_id"`
+	FilePath   sql.NullString `json:"file_path"`
+	UserID     int32          `json:"user_id"`
+	Username   sql.NullString `json:"username"`
+	Email      sql.NullString `json:"email"`
+	Password   sql.NullString `json:"password"`
 }
 
 func (q *Queries) GetPost(ctx context.Context, postID int32) (GetPostRow, error) {
@@ -188,22 +197,31 @@ func (q *Queries) GetPost(ctx context.Context, postID int32) (GetPostRow, error)
 		&i.Text,
 		&i.CreatedAt,
 		&i.SuboliveID,
-		&i.UserID,
-		&i.ImageID,
-		&i.SuboliveID_2,
 		&i.Name,
-		&i.UserID_2,
-		&i.Email,
-		&i.Username,
-		&i.Password,
-		&i.ImageID_2,
+		&i.ImageID,
 		&i.FilePath,
+		&i.UserID,
+		&i.Username,
+		&i.Email,
+		&i.Password,
 	)
 	return i, err
 }
 
 const getPosts = `-- name: GetPosts :many
-SELECT post_id, title, text, created_at, posts.subolive_id, posts.user_id, posts.image_id, subolives.subolive_id, name, users.user_id, email, username, password, images.image_id, file_path FROM posts
+SELECT posts.post_id, 
+	posts.title, 
+	posts.text, 
+	posts.created_at, 
+	posts.subolive_id, 
+	subolives.name, 
+	posts.image_id, 
+	images.file_path, 
+	posts.user_id, 
+	users.username, 
+	users.email, 
+	users.password 
+FROM posts
 LEFT JOIN subolives ON posts.subolive_id = subolives.subolive_id
 LEFT JOIN users ON posts.user_id = users.user_id
 LEFT JOIN images ON posts.image_id = images.image_id
@@ -212,21 +230,18 @@ LIMIT ?
 `
 
 type GetPostsRow struct {
-	PostID       int32          `json:"post_id"`
-	Title        string         `json:"title"`
-	Text         string         `json:"text"`
-	CreatedAt    time.Time      `json:"created_at"`
-	SuboliveID   int32          `json:"subolive_id"`
-	UserID       int32          `json:"user_id"`
-	ImageID      sql.NullInt32  `json:"image_id"`
-	SuboliveID_2 sql.NullInt32  `json:"subolive_id_2"`
-	Name         sql.NullString `json:"name"`
-	UserID_2     sql.NullInt32  `json:"user_id_2"`
-	Email        sql.NullString `json:"email"`
-	Username     sql.NullString `json:"username"`
-	Password     sql.NullString `json:"password"`
-	ImageID_2    sql.NullInt32  `json:"image_id_2"`
-	FilePath     sql.NullString `json:"file_path"`
+	PostID     int32          `json:"post_id"`
+	Title      string         `json:"title"`
+	Text       string         `json:"text"`
+	CreatedAt  time.Time      `json:"created_at"`
+	SuboliveID int32          `json:"subolive_id"`
+	Name       sql.NullString `json:"name"`
+	ImageID    sql.NullInt32  `json:"image_id"`
+	FilePath   sql.NullString `json:"file_path"`
+	UserID     int32          `json:"user_id"`
+	Username   sql.NullString `json:"username"`
+	Email      sql.NullString `json:"email"`
+	Password   sql.NullString `json:"password"`
 }
 
 func (q *Queries) GetPosts(ctx context.Context, limit int32) ([]GetPostsRow, error) {
@@ -244,16 +259,13 @@ func (q *Queries) GetPosts(ctx context.Context, limit int32) ([]GetPostsRow, err
 			&i.Text,
 			&i.CreatedAt,
 			&i.SuboliveID,
-			&i.UserID,
-			&i.ImageID,
-			&i.SuboliveID_2,
 			&i.Name,
-			&i.UserID_2,
-			&i.Email,
-			&i.Username,
-			&i.Password,
-			&i.ImageID_2,
+			&i.ImageID,
 			&i.FilePath,
+			&i.UserID,
+			&i.Username,
+			&i.Email,
+			&i.Password,
 		); err != nil {
 			return nil, err
 		}
@@ -269,7 +281,19 @@ func (q *Queries) GetPosts(ctx context.Context, limit int32) ([]GetPostsRow, err
 }
 
 const getSubolivePosts = `-- name: GetSubolivePosts :many
-SELECT post_id, title, text, created_at, posts.subolive_id, posts.user_id, posts.image_id, subolives.subolive_id, name, users.user_id, email, username, password, images.image_id, file_path FROM posts
+SELECT posts.post_id, 
+	posts.title, 
+	posts.text, 
+	posts.created_at, 
+	posts.subolive_id, 
+	subolives.name, 
+	posts.image_id, 
+	images.file_path, 
+	posts.user_id, 
+	users.username, 
+	users.email, 
+	users.password 
+FROM posts
 LEFT JOIN subolives ON posts.subolive_id = subolives.subolive_id
 LEFT JOIN users ON posts.user_id = users.user_id
 LEFT JOIN images ON posts.image_id = images.image_id
@@ -285,21 +309,18 @@ type GetSubolivePostsParams struct {
 }
 
 type GetSubolivePostsRow struct {
-	PostID       int32          `json:"post_id"`
-	Title        string         `json:"title"`
-	Text         string         `json:"text"`
-	CreatedAt    time.Time      `json:"created_at"`
-	SuboliveID   int32          `json:"subolive_id"`
-	UserID       int32          `json:"user_id"`
-	ImageID      sql.NullInt32  `json:"image_id"`
-	SuboliveID_2 sql.NullInt32  `json:"subolive_id_2"`
-	Name         sql.NullString `json:"name"`
-	UserID_2     sql.NullInt32  `json:"user_id_2"`
-	Email        sql.NullString `json:"email"`
-	Username     sql.NullString `json:"username"`
-	Password     sql.NullString `json:"password"`
-	ImageID_2    sql.NullInt32  `json:"image_id_2"`
-	FilePath     sql.NullString `json:"file_path"`
+	PostID     int32          `json:"post_id"`
+	Title      string         `json:"title"`
+	Text       string         `json:"text"`
+	CreatedAt  time.Time      `json:"created_at"`
+	SuboliveID int32          `json:"subolive_id"`
+	Name       sql.NullString `json:"name"`
+	ImageID    sql.NullInt32  `json:"image_id"`
+	FilePath   sql.NullString `json:"file_path"`
+	UserID     int32          `json:"user_id"`
+	Username   sql.NullString `json:"username"`
+	Email      sql.NullString `json:"email"`
+	Password   sql.NullString `json:"password"`
 }
 
 func (q *Queries) GetSubolivePosts(ctx context.Context, arg GetSubolivePostsParams) ([]GetSubolivePostsRow, error) {
@@ -317,16 +338,13 @@ func (q *Queries) GetSubolivePosts(ctx context.Context, arg GetSubolivePostsPara
 			&i.Text,
 			&i.CreatedAt,
 			&i.SuboliveID,
-			&i.UserID,
-			&i.ImageID,
-			&i.SuboliveID_2,
 			&i.Name,
-			&i.UserID_2,
-			&i.Email,
-			&i.Username,
-			&i.Password,
-			&i.ImageID_2,
+			&i.ImageID,
 			&i.FilePath,
+			&i.UserID,
+			&i.Username,
+			&i.Email,
+			&i.Password,
 		); err != nil {
 			return nil, err
 		}

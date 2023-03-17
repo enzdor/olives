@@ -67,14 +67,13 @@ func (q *Queries) CreateImage(ctx context.Context, filePath string) (sql.Result,
 }
 
 const createPost = `-- name: CreatePost :execresult
-INSERT INTO posts(title, text, created_at, user_id, image_id, subolive_id)
-VALUES (?, ?, ?, ?, ?, ?)
+INSERT INTO posts(title, text, user_id, image_id, subolive_id)
+VALUES (?, ?, ?, ?, ?)
 `
 
 type CreatePostParams struct {
 	Title      string        `json:"title"`
 	Text       string        `json:"text"`
-	CreatedAt  time.Time     `json:"created_at"`
 	UserID     int32         `json:"user_id"`
 	ImageID    sql.NullInt32 `json:"image_id"`
 	SuboliveID int32         `json:"subolive_id"`
@@ -84,7 +83,6 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (sql.Res
 	return q.db.ExecContext(ctx, createPost,
 		arg.Title,
 		arg.Text,
-		arg.CreatedAt,
 		arg.UserID,
 		arg.ImageID,
 		arg.SuboliveID,
@@ -131,6 +129,62 @@ WHERE user_id = ?
 
 func (q *Queries) DeleteUser(ctx context.Context, userID int32) (sql.Result, error) {
 	return q.db.ExecContext(ctx, deleteUser, userID)
+}
+
+const getNewestPost = `-- name: GetNewestPost :one
+SELECT posts.post_id, 
+	posts.title, 
+	posts.text, 
+	posts.created_at, 
+	posts.subolive_id, 
+	subolives.name, 
+	posts.image_id, 
+	images.file_path, 
+	posts.user_id, 
+	users.username, 
+	users.email, 
+	users.password 
+FROM posts
+LEFT JOIN subolives ON posts.subolive_id = subolives.subolive_id
+LEFT JOIN users ON posts.user_id = users.user_id
+LEFT JOIN images ON posts.image_id = images.image_id
+ORDER BY created_at DESC, post_id DESC
+LIMIT 1
+`
+
+type GetNewestPostRow struct {
+	PostID     int32          `json:"post_id"`
+	Title      string         `json:"title"`
+	Text       string         `json:"text"`
+	CreatedAt  time.Time      `json:"created_at"`
+	SuboliveID int32          `json:"subolive_id"`
+	Name       sql.NullString `json:"name"`
+	ImageID    sql.NullInt32  `json:"image_id"`
+	FilePath   sql.NullString `json:"file_path"`
+	UserID     int32          `json:"user_id"`
+	Username   sql.NullString `json:"username"`
+	Email      sql.NullString `json:"email"`
+	Password   sql.NullString `json:"password"`
+}
+
+func (q *Queries) GetNewestPost(ctx context.Context) (GetNewestPostRow, error) {
+	row := q.db.QueryRowContext(ctx, getNewestPost)
+	var i GetNewestPostRow
+	err := row.Scan(
+		&i.PostID,
+		&i.Title,
+		&i.Text,
+		&i.CreatedAt,
+		&i.SuboliveID,
+		&i.Name,
+		&i.ImageID,
+		&i.FilePath,
+		&i.UserID,
+		&i.Username,
+		&i.Email,
+		&i.Password,
+	)
+	return i, err
 }
 
 const getNewestUser = `-- name: GetNewestUser :one

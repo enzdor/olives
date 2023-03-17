@@ -38,6 +38,26 @@ LEFT JOIN images ON posts.image_id = images.image_id
 WHERE post_id = ?
 LIMIT 1;
 
+-- name: GetNewestPost :one
+SELECT posts.post_id, 
+	posts.title, 
+	posts.text, 
+	posts.created_at, 
+	posts.subolive_id, 
+	subolives.name, 
+	posts.image_id, 
+	images.file_path, 
+	posts.user_id, 
+	users.username, 
+	users.email, 
+	users.password 
+FROM posts
+LEFT JOIN subolives ON posts.subolive_id = subolives.subolive_id
+LEFT JOIN users ON posts.user_id = users.user_id
+LEFT JOIN images ON posts.image_id = images.image_id
+ORDER BY created_at DESC, post_id DESC
+LIMIT 1;
+
 -- name: GetSubolivePosts :many
 SELECT posts.post_id, 
 	posts.title, 
@@ -61,8 +81,8 @@ LIMIT 10
 OFFSET ?;
 
 -- name: CreatePost :execresult
-INSERT INTO posts(title, text, created_at, user_id, image_id, subolive_id)
-VALUES (?, ?, ?, ?, ?, ?);
+INSERT INTO posts(title, text, user_id, image_id, subolive_id)
+VALUES (?, ?, ?, ?, ?);
 
 -- name: DeletePost :execresult
 DELETE FROM posts

@@ -4,13 +4,17 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"io"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strconv"
 	"testing"
 
 	"github.com/jobutterfly/olives/consts"
 	"github.com/jobutterfly/olives/sqlc"
+	"github.com/jobutterfly/olives/utils"
 )
 
 func TestGetPost(t *testing.T) {
@@ -82,7 +86,6 @@ func TestGetSubolivePosts(t *testing.T) {
 		t.Errorf("expected no errors, got %v", err)
 		return
 	}
-
 	firstJsonPosts, err := json.Marshal(firstPosts)
 	if err != nil {
 		t.Errorf("expected no errors, got %v", err)
@@ -97,7 +100,6 @@ func TestGetSubolivePosts(t *testing.T) {
 		t.Errorf("expected no errors, got %v", err)
 		return
 	}
-
 	secondJsonPosts, err := json.Marshal(secondPosts)
 	if err != nil {
 		t.Errorf("expected no errors, got %v", err)
@@ -174,7 +176,100 @@ func TestGetSubolivePosts(t *testing.T) {
 	TestGet(t, testCases, Th.GetSubolivePosts)
 }
 
+func TestCreatePost(t *testing.T) {
+	// TODO: find way of including images in request = https://stackoverflow.com/questions/57589381/how-do-i-send-an-http-post-request-with-image-and-with-some-parameters-in-go
+	newestPost, err := Th.q.GetNewestPost(context.Background())
+	if err != nil {
+		t.Errorf("expected no errors, got %v", err)
+		return
+	}
 
+	newPost := utils.RandomPost()
+	newPost.PostID = newestPost.PostID + 1
+
+	firstExpectedRes := consts.ResCreatedPost {
+		Post: newPost,
+		Errors: consts.EmptyCreateUserErrors,
+	}
+	firstJsonRes, err := json.Marshal(firstExpectedRes)
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+
+	pr, pw := io.Pipe()
+	form := multipart.NewWriter(pw)
+
+	go func() {
+		defer pw.Close()
+
+		if err := form.WriteField("title", newPost.Title); err != nil {
+			t.Errorf("expected no error, got %v", err)
+			return
+		}
+
+		if err := form.WriteField("text", newPost.Text); err != nil {
+			t.Errorf("expected no error, got %v", err)
+			return
+		}
+
+		if err := form.WriteField("image_name", "test.png"); err != nil {
+			t.Errorf("expected no error, got %v", err)
+			return
+		}
+
+		if err := form.WriteField("user_id", strconv.Itoa(int(newPost.UserID))); err != nil {
+			t.Errorf("expected no error, got %v", err)
+			return
+		}
+
+		if err := form.WriteField("subolive_id", strconv.Itoa(int(newPost.SuboliveID))); err != nil {
+			t.Errorf("expected no error, got %v", err)
+			return
+		}
+
+		file, err := os.Open("../test.png")
+		if err != nil {
+			t.Errorf("expected no error, got %v", err)
+			return
+		}
+		defer file.Close()
+
+		w, err := form.CreateFormFile("image", "test.png")
+		if err != nil {
+			t.Errorf("expected no error, got %v", err)
+			return
+		}
+
+		_, err = io.Copy(w, file)
+		if err != nil {
+			t.Errorf("expected no error, got %v", err)
+			return
+		}
+
+		form.Close()
+	} ()
+
+
+	firstReq, err := http.NewRequest(http.MethodPost, "/posts", pr)
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+	firstReq.Header.Set("Content-Type", form.FormDataContentType())
+
+
+	testCases := []PostTestCase {
+		{
+			Name:         "successful get posts request",
+			Req:          firstReq,
+			ExpectedRes:  firstJsonRes,
+			ExpectedCode: http.StatusOK,
+		},
+	}
+
+	TestPost(t, testCases, Th.CreatePost)
+}
 
 
 

@@ -1,9 +1,12 @@
 package controllers
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
+	"io"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
@@ -84,6 +87,30 @@ func (h *Handler) GetSubolivePosts(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseMultipartForm(32 << 20); err != nil {
+		utils.NewError(w, http.StatusInternalServerError, "could not parse file")
+		return
+	}
+
+	img, _, err := r.FormFile("image")
+	if err != nil {
+		utils.NewError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	defer img.Close()
+
+	buf := bytes.NewBuffer(nil)
+	if _, err := io.Copy(buf, img); err != nil {
+		utils.NewError(w, http.StatusInternalServerError, "could not read image")
+		return
+	}
+	
+	if err := os.WriteFile("created.png", buf.Bytes(), 0666); err != nil {
+		utils.NewError(w, http.StatusInternalServerError, "could not write image")
+		return
+	}
+}
 
 
 

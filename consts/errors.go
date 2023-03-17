@@ -41,3 +41,22 @@ var EmptyCreateUserErrors = [3]FormInputError {
 		Field: "password",
 	},
 }
+
+var EmptyCreatePostErrors = [3]FormInputError {
+	{
+		Bool: false,
+		Message: "",
+		Field: "title",
+	},
+	{
+		Bool: false,
+		Message: "",
+		Field: "text",
+	},
+	{
+		Bool: false,
+		Message: "",
+		Field: "image",
+	},
+}
+

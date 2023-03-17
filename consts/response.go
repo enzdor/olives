@@ -7,4 +7,9 @@ type ResCreateUser struct {
 	Errors [3]FormInputError `json:"errors"`
 }
 
+type ResCreatedPost struct {
+	Post sqlc.Post `json:"post"`
+	Errors [3]FormInputError `json:"errors"`
+}
+
 const ITEMS_PER_PAGE = 10

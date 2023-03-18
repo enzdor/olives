@@ -1,8 +1,15 @@
 package utils
 
 import (
+	"bytes"
+	"errors"
+	"fmt"
+	"io"
+	"mime/multipart"
 	"net/mail"
+	"os"
 	"strconv"
+	"time"
 
 	"github.com/jobutterfly/olives/consts"
 )
@@ -11,6 +18,8 @@ import (
 type PathInfo struct {
 	Id int
 }
+
+const maxFileSize int64 = (1 << 30) / 2 // half a meg
 
 func GetPathValues(ps []string, offset int) (PathInfo, error) {
 	r := PathInfo{
@@ -44,16 +53,25 @@ func ValidateNewUser(email string, username string, password string) (errs [3]co
 		errs[0].Message = "Invalid email address"
 		valid = false
 	}
+	if len(email) > 255 {
+		errs[0].Bool = true
+		errs[0].Message = "This field must have less than 275 characters"
+		valid = false
+	}
 
 	if username == "" {
 		errs[1].Bool = true
 		errs[1].Message = "This field is required"
 		valid = false
 	}
-
 	if len(username) < 5 {
 		errs[1].Bool = true
 		errs[1].Message = "This field must be greater than 6 characters"
+		valid = false
+	}
+	if len(username) > 255 {
+		errs[1].Bool = true
+		errs[1].Message = "This field must have less than 275 characters"
 		valid = false
 	}
 
@@ -62,13 +80,97 @@ func ValidateNewUser(email string, username string, password string) (errs [3]co
 		errs[2].Message = "This field is required"
 		valid = false
 	}
-
 	if len(password) < 5 {
 		errs[2].Bool = true
 		errs[2].Message = "This field must be greater than 6 characters"
 		valid = false
 	}
+	if len(password) > 255 {
+		errs[2].Bool = true
+		errs[2].Message = "This field must have less than 275 characters"
+		valid = false
+	}
 
 	return errs, valid
 }
+
+func ValidateNewPost(title string, text string, image multipart.File, header *multipart.FileHeader) (errs [3]consts.FormInputError, valid bool, imgPath string){
+	imgPath = ""
+	valid = true
+	errs = consts.EmptyCreatePostErrors
+
+	if title == "" {
+		errs[0].Bool = true
+		errs[0].Message = "This field is required"
+		valid = false
+	}
+	if len(title) < 5 {
+		errs[0].Bool = true
+		errs[0].Message = "This field must be greater than 6 characters"
+		valid = false
+	}
+	if len(title) > 255 {
+		errs[0].Bool = true
+		errs[0].Message = "This field must have less than 275 characters"
+		valid = false
+	}
+
+	if text == "" {
+		errs[1].Bool = true
+		errs[1].Message = "This field is required"
+		valid = false
+	}
+	if len(text) < 5 {
+		errs[1].Bool = true
+		errs[1].Message = "This field must be greater than 6 characters"
+		valid = false
+	}
+	if len(title) > 1275 {
+		errs[1].Bool = true
+		errs[1].Message = "This field must have less than 1275 characters"
+		valid = false
+	}
+
+	path, err := DownloadImage(image, header)
+	if err != nil {
+		errs[2].Bool = true
+		errs[2].Message = err.Error()
+		valid = false
+		return errs, valid, imgPath
+	}
+	imgPath = path
+
+	return errs, valid, imgPath
+}
+
+func DownloadImage(image multipart.File, header *multipart.FileHeader) (string, error) {
+	buf := bytes.NewBuffer(nil)
+	if _, err := io.Copy(buf, image); err != nil {
+		return "", err
+	}
+
+	if header.Size > maxFileSize {
+		return "", errors.New("File size greater than 512 kilobytes. Choose a smaller file.")
+	}
+	path := fmt.Sprintf("%d%s", time.Now().Unix(), header.Filename)
+	
+	if err := os.WriteFile(path, buf.Bytes(), 0666); err != nil {
+		return "", err
+	}
+
+	return path, nil
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 

@@ -1,14 +1,12 @@
 package controllers
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
-	"io"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/jobutterfly/olives/consts"
 	"github.com/jobutterfly/olives/sqlc"
@@ -92,24 +90,81 @@ func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
 		utils.NewError(w, http.StatusInternalServerError, "could not parse file")
 		return
 	}
-
-	img, _, err := r.FormFile("image")
+	title := strings.TrimSpace(r.FormValue("title"))
+	text := strings.TrimSpace(r.FormValue("text"))
+	userId, err := strconv.Atoi(r.FormValue("user_id"))
 	if err != nil {
 		utils.NewError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	defer img.Close()
+	suboliveId, err := strconv.Atoi(r.FormValue("subolive_id"))
+	if err != nil {
+		utils.NewError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
 
-	buf := bytes.NewBuffer(nil)
-	if _, err := io.Copy(buf, img); err != nil {
-		utils.NewError(w, http.StatusInternalServerError, "could not read image")
+	image, header, err := r.FormFile("image")
+	if err != nil {
+		utils.NewError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	
-	if err := os.WriteFile("created.png", buf.Bytes(), 0666); err != nil {
-		utils.NewError(w, http.StatusInternalServerError, "could not write image")
+	defer image.Close()
+
+	errs, valid, imgPath:= utils.ValidateNewPost(title, text, image, header)
+	if !valid {
+		utils.NewErrorBody(w, http.StatusInternalServerError, consts.ResCreatedPost{
+			Post: sqlc.Post{
+				PostID: 0,
+				Title: title,
+				Text: text,
+				CreatedAt: time.Now(),
+				UserID: 0,
+				SuboliveID: 0,
+				ImageID: sql.NullInt32{
+					Int32: 0,
+					Valid: false,
+				},
+			},
+			Errors: errs,
+		})
 		return
 	}
+
+	_, err = h.q.CreateImage(context.Background(), imgPath)
+	if err != nil {
+		utils.NewError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	img, err := h.q.GetNewestImage(context.Background())
+	if err != nil {
+		utils.NewError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	_, err = h.q.CreatePost(context.Background(), sqlc.CreatePostParams{
+		Title: title,
+		Text: text,
+		UserID: int32(userId),
+		SuboliveID: int32(suboliveId),
+		ImageID: sql.NullInt32{
+			Int32: img.ImageID,
+			Valid: true,
+		},
+	})
+	post, err := h.q.GetNewestPost(context.Background())
+	if err != nil {
+		utils.NewError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	res := consts.ResCreatedPost{
+		Post: post,
+		Errors: errs,
+	}
+
+	utils.NewResponse(w, http.StatusOK, post)
+	return
 }
 
 

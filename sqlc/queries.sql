@@ -127,6 +127,12 @@ WHERE user_id = ?;
 INSERT INTO images(file_path)
 VALUES(?);
 
+-- name: GetNewestImage :one
+SELECT * FROM images
+WHERE image_id = (
+	SELECT MAX(image_id) FROM images
+);
+
 -- name: GetSubolives :many
 SELECT * FROM subolives;
 

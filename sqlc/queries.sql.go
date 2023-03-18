@@ -131,6 +131,20 @@ func (q *Queries) DeleteUser(ctx context.Context, userID int32) (sql.Result, err
 	return q.db.ExecContext(ctx, deleteUser, userID)
 }
 
+const getNewestImage = `-- name: GetNewestImage :one
+SELECT image_id, file_path FROM images
+WHERE image_id = (
+	SELECT MAX(image_id) FROM images
+)
+`
+
+func (q *Queries) GetNewestImage(ctx context.Context) (Image, error) {
+	row := q.db.QueryRowContext(ctx, getNewestImage)
+	var i Image
+	err := row.Scan(&i.ImageID, &i.FilePath)
+	return i, err
+}
+
 const getNewestPost = `-- name: GetNewestPost :one
 SELECT posts.post_id, 
 	posts.title, 

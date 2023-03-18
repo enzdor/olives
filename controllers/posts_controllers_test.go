@@ -177,7 +177,6 @@ func TestGetSubolivePosts(t *testing.T) {
 }
 
 func TestCreatePost(t *testing.T) {
-	// TODO: find way of including images in request = https://stackoverflow.com/questions/57589381/how-do-i-send-an-http-post-request-with-image-and-with-some-parameters-in-go
 	newestPost, err := Th.q.GetNewestPost(context.Background())
 	if err != nil {
 		t.Errorf("expected no errors, got %v", err)
@@ -189,7 +188,7 @@ func TestCreatePost(t *testing.T) {
 
 	firstExpectedRes := consts.ResCreatedPost {
 		Post: newPost,
-		Errors: consts.EmptyCreateUserErrors,
+		Errors: consts.EmptyCreatePostErrors,
 	}
 	firstJsonRes, err := json.Marshal(firstExpectedRes)
 	if err != nil {
@@ -209,11 +208,6 @@ func TestCreatePost(t *testing.T) {
 		}
 
 		if err := form.WriteField("text", newPost.Text); err != nil {
-			t.Errorf("expected no error, got %v", err)
-			return
-		}
-
-		if err := form.WriteField("image_name", "test.png"); err != nil {
 			t.Errorf("expected no error, got %v", err)
 			return
 		}

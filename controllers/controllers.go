@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"context"
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -8,7 +10,10 @@ import (
 	"testing"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/jobutterfly/olives/consts"
 	"github.com/jobutterfly/olives/database"
+	"github.com/jobutterfly/olives/sqlc"
+	"github.com/jobutterfly/olives/utils"
 	"github.com/joho/godotenv"
 )
 
@@ -21,11 +26,17 @@ type GetTestCase struct {
 	ExpectedCode int
 }
 
+type AfterRes struct {
+	Valid bool
+	Type  string
+}
+
 type PostTestCase struct {
 	Name         string
 	Req          *http.Request
 	ExpectedRes  []byte
 	ExpectedCode int
+	TestAfter    AfterRes
 }
 
 func Start() error {
@@ -92,11 +103,47 @@ func TestPost(t *testing.T, testCases []PostTestCase, controller func(w http.Res
 				return
 			}
 
-			if string(resBody) != string(tc.ExpectedRes) {
-				t.Errorf("expected response body to be equal to: \n%v\ngot:\n%v", string(tc.ExpectedRes), string(resBody))
-				return
+			if tc.TestAfter.Valid {
+				switch tc.TestAfter.Type {
+				case "post":
+					post, err := Th.q.GetNewestPost(context.Background())
+					if err != nil {
+						utils.NewError(w, http.StatusInternalServerError, err.Error())
+						return
+					}
+
+					resPost := sqlc.Post{
+						PostID:     post.PostID,
+						Title:      post.Title,
+						Text:       post.Text,
+						CreatedAt:  post.CreatedAt,
+						UserID:     post.UserID,
+						SuboliveID: post.SuboliveID,
+						ImageID:    post.ImageID,
+					}
+
+					res := consts.ResCreatedPost{
+						Post:   resPost,
+						Errors: consts.EmptyCreatePostErrors,
+					}
+
+					resJson, err := json.Marshal(res)
+					if err != nil {
+						t.Errorf("expected no errors, got %v", err)
+						return
+					}
+
+					if string(resBody) != string(resJson) {
+						t.Errorf("banana expected response body to be equal to: \n%v\ngot:\n%v", string(resJson), string(resBody))
+						return
+					}
+				}
+			} else {
+				if string(resBody) != string(tc.ExpectedRes) {
+					t.Errorf("expected response body to be equal to: \n%v\ngot:\n%v", string(tc.ExpectedRes), string(resBody))
+					return
+				}
 			}
 		})
 	}
-
 }

@@ -171,24 +171,40 @@ func TestCreateUser(t *testing.T) {
 			Req:          firstReq,
 			ExpectedRes:  firstJsonRes,
 			ExpectedCode: http.StatusCreated,
+			TestAfter: AfterRes{
+				Valid: true,
+				Type: "user",
+			},
 		},
 		{
 			Name:         "invalid email user request",
 			Req:          secondReq,
 			ExpectedRes:  secondJsonRes,
 			ExpectedCode: http.StatusUnprocessableEntity,
+			TestAfter: AfterRes{
+				Valid: false,
+				Type: "",
+			},
 		},
 		{
 			Name:         "invalid username user request",
 			Req:          thirdReq,
 			ExpectedRes:  thirdJsonRes,
 			ExpectedCode: http.StatusUnprocessableEntity,
+			TestAfter: AfterRes{
+				Valid: false,
+				Type: "",
+			},
 		},
 		{
 			Name:         "invalid password user request",
 			Req:          fourthReq,
 			ExpectedRes:  fourthJsonRes,
 			ExpectedCode: http.StatusUnprocessableEntity,
+			TestAfter: AfterRes{
+				Valid: false,
+				Type: "",
+			},
 		},
 	}
 

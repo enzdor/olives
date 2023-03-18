@@ -158,12 +158,22 @@ func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	resPost := sqlc.Post{
+		PostID: post.PostID,
+		Title: post.Title,
+		Text: post.Text,
+		CreatedAt: post.CreatedAt,
+		UserID: post.UserID,
+		SuboliveID: post.SuboliveID,
+		ImageID: post.ImageID,
+	}
+
 	res := consts.ResCreatedPost{
-		Post: post,
+		Post: resPost,
 		Errors: errs,
 	}
 
-	utils.NewResponse(w, http.StatusOK, post)
+	utils.NewResponse(w, http.StatusCreated, res)
 	return
 }
 

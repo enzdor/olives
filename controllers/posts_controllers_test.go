@@ -255,10 +255,14 @@ func TestCreatePost(t *testing.T) {
 
 	testCases := []PostTestCase {
 		{
-			Name:         "successful get posts request",
+			Name:         "successful post post",
 			Req:          firstReq,
 			ExpectedRes:  firstJsonRes,
-			ExpectedCode: http.StatusOK,
+			ExpectedCode: http.StatusCreated,
+			TestAfter: AfterRes{
+				Valid: true,
+				Type: "post",
+			},
 		},
 	}
 

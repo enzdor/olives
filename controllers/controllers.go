@@ -22,7 +22,7 @@ var Th *Handler
 type GetTestCase struct {
 	Name         string
 	Req          *http.Request
-	ExpectedRes  []byte
+	ExpectedRes  any
 	ExpectedCode int
 }
 
@@ -75,8 +75,14 @@ func TestGet(t *testing.T, testCases []GetTestCase, controller func(w http.Respo
 				return
 			}
 
-			if string(resBody) != string(tc.ExpectedRes) {
-				t.Errorf("expected response body to be equal to: \n%v\ngot:\n%v", string(tc.ExpectedRes), string(resBody))
+			expectedResJson, err := json.Marshal(tc.ExpectedRes)
+			if err != nil {
+				t.Errorf("expected no error, got %v", err)
+				return
+			}
+
+			if string(resBody) != string(expectedResJson) {
+				t.Errorf("expected response body to be equal to: \n%v\ngot:\n%v", string(expectedResJson), string(resBody))
 				return
 			}
 		})

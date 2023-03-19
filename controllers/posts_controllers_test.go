@@ -30,45 +30,27 @@ func TestGetPost(t *testing.T) {
 		return
 	}
 
-	jsonPost, err := json.Marshal(post)
-	if err != nil {
-		t.Errorf("expected no error, got %v", err)
-		return
-	}
-
-	noRowMsg, err := json.Marshal(consts.ErrorMessage{
-		Msg: sql.ErrNoRows.Error(),
-	})
-	if err != nil {
-		t.Errorf("expected no errors, got %v", err)
-		return
-	}
-
-	notAnInt, err := json.Marshal(consts.ErrorMessage{
-		Msg: consts.PathNotAnInteger.Error(),
-	})
-	if err != nil {
-		t.Errorf("expected no errors, got %v", err)
-		return
-	}
-
 	testCases := []GetTestCase{
 		{
 			Name:         "successful get post request",
 			Req:          httptest.NewRequest(http.MethodGet, "/posts/"+strconv.Itoa(int(postId)), nil),
-			ExpectedRes:  jsonPost,
+			ExpectedRes:  post,
 			ExpectedCode: http.StatusOK,
 		},
 		{
-			Name:         "failed request for non existing post",
-			Req:          httptest.NewRequest(http.MethodGet, "/posts/"+strconv.Itoa(1000000), nil),
-			ExpectedRes:  noRowMsg,
+			Name: "failed request for non existing post",
+			Req:  httptest.NewRequest(http.MethodGet, "/posts/"+strconv.Itoa(1000000), nil),
+			ExpectedRes: consts.ErrorMessage{
+				Msg: sql.ErrNoRows.Error(),
+			},
 			ExpectedCode: http.StatusNotFound,
 		},
 		{
-			Name:         "failed request for wrong path",
-			Req:          httptest.NewRequest(http.MethodGet, "/posts/banana", nil),
-			ExpectedRes:  notAnInt,
+			Name: "failed request for wrong path",
+			Req:  httptest.NewRequest(http.MethodGet, "/posts/banana", nil),
+			ExpectedRes: consts.ErrorMessage{
+				Msg: consts.PathNotAnInteger.Error(),
+			},
 			ExpectedCode: http.StatusBadRequest,
 		},
 	}
@@ -79,55 +61,17 @@ func TestGetPost(t *testing.T) {
 func TestGetSubolivePosts(t *testing.T) {
 	suboliveId := int32(2)
 	firstPosts, err := Th.q.GetSubolivePosts(context.Background(), sqlc.GetSubolivePostsParams{
-		Offset: 0,
+		Offset:     0,
 		SuboliveID: suboliveId,
 	})
-	if err != nil {
-		t.Errorf("expected no errors, got %v", err)
-		return
-	}
-	firstJsonPosts, err := json.Marshal(firstPosts)
 	if err != nil {
 		t.Errorf("expected no errors, got %v", err)
 		return
 	}
 
 	secondPosts, err := Th.q.GetSubolivePosts(context.Background(), sqlc.GetSubolivePostsParams{
-		Offset: 10,
+		Offset:     10,
 		SuboliveID: suboliveId,
-	})
-	if err != nil {
-		t.Errorf("expected no errors, got %v", err)
-		return
-	}
-	secondJsonPosts, err := json.Marshal(secondPosts)
-	if err != nil {
-		t.Errorf("expected no errors, got %v", err)
-		return
-	}
-
-	noRowMsg, err := json.Marshal(consts.ErrorMessage{
-		Msg: sql.ErrNoRows.Error(),
-	})
-
-	notAnInt, err := json.Marshal(consts.ErrorMessage{
-		Msg: consts.PathNotAnInteger.Error(),
-	})
-	if err != nil {
-		t.Errorf("expected no errors, got %v", err)
-		return
-	}
-
-	pageNotAnInt, err := json.Marshal(consts.ErrorMessage{
-		Msg: consts.PageNotAnInteger.Error(),
-	})
-	if err != nil {
-		t.Errorf("expected no errors, got %v", err)
-		return
-	}
-
-	suboliveNonExistant, err := json.Marshal(consts.ErrorMessage{
-		Msg: consts.SuboliveNonExistant.Error(),
 	})
 	if err != nil {
 		t.Errorf("expected no errors, got %v", err)
@@ -138,37 +82,45 @@ func TestGetSubolivePosts(t *testing.T) {
 		{
 			Name:         "successful get posts request",
 			Req:          httptest.NewRequest(http.MethodGet, "/posts/subolive/"+strconv.Itoa(int(suboliveId))+"?page=0", nil),
-			ExpectedRes:  firstJsonPosts,
+			ExpectedRes:  firstPosts,
 			ExpectedCode: http.StatusOK,
 		},
 		{
 			Name:         "successful get posts request second page",
 			Req:          httptest.NewRequest(http.MethodGet, "/posts/subolive/"+strconv.Itoa(int(suboliveId))+"?page=1", nil),
-			ExpectedRes:  secondJsonPosts,
+			ExpectedRes:  secondPosts,
 			ExpectedCode: http.StatusOK,
 		},
 		{
-			Name:         "unsuccessful get posts request subolive id not number",
-			Req:          httptest.NewRequest(http.MethodGet, "/posts/subolive/banana?page=1", nil),
-			ExpectedRes:  notAnInt,
+			Name: "unsuccessful get posts request subolive id not number",
+			Req:  httptest.NewRequest(http.MethodGet, "/posts/subolive/banana?page=1", nil),
+			ExpectedRes: consts.ErrorMessage{
+				Msg: consts.PathNotAnInteger.Error(),
+			},
 			ExpectedCode: http.StatusBadRequest,
 		},
 		{
 			Name:         "unsuccessful get posts request subolive id not exist",
 			Req:          httptest.NewRequest(http.MethodGet, "/posts/subolive/"+strconv.Itoa(int(10000))+"?page=1", nil),
-			ExpectedRes:  suboliveNonExistant,
+			ExpectedRes:  consts.ErrorMessage{
+				Msg: consts.SuboliveNonExistant.Error(),
+			},
 			ExpectedCode: http.StatusNotFound,
 		},
 		{
-			Name:         "unsuccessful get posts request not existant page",
-			Req:          httptest.NewRequest(http.MethodGet, "/posts/subolive/"+strconv.Itoa(int(suboliveId))+"?page=1000", nil),
-			ExpectedRes:  noRowMsg,
+			Name: "unsuccessful get posts request not existant page",
+			Req:  httptest.NewRequest(http.MethodGet, "/posts/subolive/"+strconv.Itoa(int(suboliveId))+"?page=1000", nil),
+			ExpectedRes: consts.ErrorMessage{
+				Msg: sql.ErrNoRows.Error(),
+			},
 			ExpectedCode: http.StatusNotFound,
 		},
 		{
 			Name:         "unsuccessful get posts request page not int",
 			Req:          httptest.NewRequest(http.MethodGet, "/posts/subolive/"+strconv.Itoa(int(suboliveId))+"?page=banana", nil),
-			ExpectedRes:  pageNotAnInt,
+			ExpectedRes:  consts.ErrorMessage{
+				Msg: consts.PageNotAnInteger.Error(),
+			},
 			ExpectedCode: http.StatusInternalServerError,
 		},
 	}
@@ -186,8 +138,8 @@ func TestCreatePost(t *testing.T) {
 	newPost := utils.RandomPost()
 	newPost.PostID = newestPost.PostID + 1
 
-	firstExpectedRes := consts.ResCreatedPost {
-		Post: newPost,
+	firstExpectedRes := consts.ResCreatedPost{
+		Post:   newPost,
 		Errors: consts.EmptyCreatePostErrors,
 	}
 	firstJsonRes, err := json.Marshal(firstExpectedRes)
@@ -242,8 +194,7 @@ func TestCreatePost(t *testing.T) {
 		}
 
 		form.Close()
-	} ()
-
+	}()
 
 	firstReq, err := http.NewRequest(http.MethodPost, "/posts", pr)
 	if err != nil {
@@ -252,8 +203,7 @@ func TestCreatePost(t *testing.T) {
 	}
 	firstReq.Header.Set("Content-Type", form.FormDataContentType())
 
-
-	testCases := []PostTestCase {
+	testCases := []PostTestCase{
 		{
 			Name:         "successful post post",
 			Req:          firstReq,
@@ -261,26 +211,10 @@ func TestCreatePost(t *testing.T) {
 			ExpectedCode: http.StatusCreated,
 			TestAfter: AfterRes{
 				Valid: true,
-				Type: "post",
+				Type:  "post",
 			},
 		},
 	}
 
 	TestPost(t, testCases, Th.CreatePost)
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -28,45 +28,27 @@ func TestGetUser(t *testing.T) {
 		return
 	}
 
-	jsonUser, err := json.Marshal(user)
-	if err != nil {
-		t.Errorf("expected no error, got %v", err)
-		return
-	}
-
-	noRowMsg, err := json.Marshal(consts.ErrorMessage{
-		Msg: sql.ErrNoRows.Error(),
-	})
-	if err != nil {
-		t.Errorf("expected no errors, got %v", err)
-		return
-	}
-
-	notAnInt, err := json.Marshal(consts.ErrorMessage{
-		Msg: consts.PathNotAnInteger.Error(),
-	})
-	if err != nil {
-		t.Errorf("expected no errors, got %v", err)
-		return
-	}
-
 	testCases := []GetTestCase{
 		{
 			Name:         "successful get user request",
 			Req:          httptest.NewRequest(http.MethodGet, "/users/"+strconv.Itoa(int(userId)), nil),
-			ExpectedRes:  jsonUser,
+			ExpectedRes:  user,
 			ExpectedCode: http.StatusOK,
 		},
 		{
 			Name:         "failed request for non existing user",
 			Req:          httptest.NewRequest(http.MethodGet, "/users/"+strconv.Itoa(1000000), nil),
-			ExpectedRes:  noRowMsg,
+			ExpectedRes:  consts.ErrorMessage{
+				Msg: sql.ErrNoRows.Error(),
+			},
 			ExpectedCode: http.StatusNotFound,
 		},
 		{
 			Name:         "failed request for wrong path",
 			Req:          httptest.NewRequest(http.MethodGet, "/users/banana", nil),
-			ExpectedRes:  notAnInt,
+			ExpectedRes:  consts.ErrorMessage{
+				Msg: consts.PathNotAnInteger.Error(),
+			},
 			ExpectedCode: http.StatusBadRequest,
 		},
 	}
@@ -166,7 +148,6 @@ func TestCreateUser(t *testing.T) {
 
 	testCases := []PostTestCase{
 		{
-			// FIXME: not passing
 			Name:         "successful create user request",
 			Req:          firstReq,
 			ExpectedRes:  firstJsonRes,
@@ -217,29 +198,23 @@ func TestDeleteUser(t *testing.T) {
 		t.Errorf("expected no error, got %v", err)
 		return
 	}
-	firstReq := httptest.NewRequest(http.MethodDelete, "/users/" + strconv.Itoa(int(newestUser.UserID)), nil)
-	firstRes, err := json.Marshal("")
-	secondReq := httptest.NewRequest(http.MethodDelete, "/users/" + strconv.Itoa(1000000), nil)
 
-	noRowMsg, err := json.Marshal(consts.ErrorMessage{
-		Msg: sql.ErrNoRows.Error(),
-	})
-	if err != nil {
-		t.Errorf("expected no errors, got %v", err)
-		return
-	}
+	firstReq := httptest.NewRequest(http.MethodDelete, "/users/" + strconv.Itoa(int(newestUser.UserID)), nil)
+	secondReq := httptest.NewRequest(http.MethodDelete, "/users/" + strconv.Itoa(1000000), nil)
 
 	testCases := []GetTestCase {
 		{
 			Name: "successful delete of user",
 			Req: firstReq,
-			ExpectedRes: firstRes,
+			ExpectedRes: "",
 			ExpectedCode: http.StatusOK,
 		},
 		{
 			Name: "failed request for non existing user",
 			Req: secondReq,
-			ExpectedRes: noRowMsg,
+			ExpectedRes: consts.ErrorMessage{
+				Msg: sql.ErrNoRows.Error(),
+			},
 			ExpectedCode: http.StatusNotFound,
 		},
 	}

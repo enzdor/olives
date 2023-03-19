@@ -7,9 +7,9 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/jobutterfly/olives/consts"
 	"github.com/jobutterfly/olives/sqlc"
@@ -99,9 +99,9 @@ func TestGetSubolivePosts(t *testing.T) {
 			ExpectedCode: http.StatusBadRequest,
 		},
 		{
-			Name:         "unsuccessful get posts request subolive id not exist",
-			Req:          httptest.NewRequest(http.MethodGet, "/posts/subolive/"+strconv.Itoa(int(10000))+"?page=1", nil),
-			ExpectedRes:  consts.ErrorMessage{
+			Name: "unsuccessful get posts request subolive id not exist",
+			Req:  httptest.NewRequest(http.MethodGet, "/posts/subolive/"+strconv.Itoa(int(10000))+"?page=1", nil),
+			ExpectedRes: consts.ErrorMessage{
 				Msg: consts.SuboliveNonExistant.Error(),
 			},
 			ExpectedCode: http.StatusNotFound,
@@ -115,9 +115,9 @@ func TestGetSubolivePosts(t *testing.T) {
 			ExpectedCode: http.StatusNotFound,
 		},
 		{
-			Name:         "unsuccessful get posts request page not int",
-			Req:          httptest.NewRequest(http.MethodGet, "/posts/subolive/"+strconv.Itoa(int(suboliveId))+"?page=banana", nil),
-			ExpectedRes:  consts.ErrorMessage{
+			Name: "unsuccessful get posts request page not int",
+			Req:  httptest.NewRequest(http.MethodGet, "/posts/subolive/"+strconv.Itoa(int(suboliveId))+"?page=banana", nil),
+			ExpectedRes: consts.ErrorMessage{
 				Msg: consts.PageNotAnInteger.Error(),
 			},
 			ExpectedCode: http.StatusInternalServerError,
@@ -142,53 +142,33 @@ func TestCreatePost(t *testing.T) {
 		Errors: consts.EmptyCreatePostErrors,
 	}
 
+	newPost2 := sqlc.Post{
+		PostID:     0,
+		Title:      "",
+		Text:       "",
+		CreatedAt:  time.Now(),
+		UserID:     0,
+		SuboliveID: 4,
+		ImageID: sql.NullInt32{
+			Int32: 0,
+			Valid: false,
+		},
+	}
+	errs2 := consts.EmptyCreatePostErrors
+	errs2[0].Bool = true
+	errs2[0].Message = "This field must be greater than 6 characters"
+	errs2[1].Bool = true
+	errs2[1].Message = "This field must be greater than 6 characters"
+	errs2[2].Bool = true
+	errs2[2].Message = "File size greater than 512 kilobytes. Choose a smaller file."
+	secondExpectedRes := consts.ResCreatedPost{
+		Post:   newPost2,
+		Errors: errs2,
+	}
+
 	pr, pw := io.Pipe()
 	form := multipart.NewWriter(pw)
-
-	go func() {
-		defer pw.Close()
-
-		if err := form.WriteField("title", newPost.Title); err != nil {
-			t.Errorf("expected no error, got %v", err)
-			return
-		}
-
-		if err := form.WriteField("text", newPost.Text); err != nil {
-			t.Errorf("expected no error, got %v", err)
-			return
-		}
-
-		if err := form.WriteField("user_id", strconv.Itoa(int(newPost.UserID))); err != nil {
-			t.Errorf("expected no error, got %v", err)
-			return
-		}
-
-		if err := form.WriteField("subolive_id", strconv.Itoa(int(newPost.SuboliveID))); err != nil {
-			t.Errorf("expected no error, got %v", err)
-			return
-		}
-
-		file, err := os.Open("../test.png")
-		if err != nil {
-			t.Errorf("expected no error, got %v", err)
-			return
-		}
-		defer file.Close()
-
-		w, err := form.CreateFormFile("image", "test.png")
-		if err != nil {
-			t.Errorf("expected no error, got %v", err)
-			return
-		}
-
-		_, err = io.Copy(w, file)
-		if err != nil {
-			t.Errorf("expected no error, got %v", err)
-			return
-		}
-
-		form.Close()
-	}()
+	go NewPost(t, pw, form, "test.png", newPost)
 
 	firstReq, err := http.NewRequest(http.MethodPost, "/posts", pr)
 	if err != nil {
@@ -196,6 +176,17 @@ func TestCreatePost(t *testing.T) {
 		return
 	}
 	firstReq.Header.Set("Content-Type", form.FormDataContentType())
+
+	pr2, pw2 := io.Pipe()
+	form2 := multipart.NewWriter(pw2)
+	go NewPost(t, pw2, form2, "cheese.png", newPost2)
+
+	secondReq, err := http.NewRequest(http.MethodPost, "/posts", pr2)
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+	secondReq.Header.Set("Content-Type", form2.FormDataContentType())
 
 	testCases := []PostTestCase{
 		{
@@ -206,6 +197,16 @@ func TestCreatePost(t *testing.T) {
 			TestAfter: AfterRes{
 				Valid: true,
 				Type:  "post",
+			},
+		},
+		{
+			Name:         "unsuccessful post post, image too large",
+			Req:          secondReq,
+			ExpectedRes:  secondExpectedRes,
+			ExpectedCode: http.StatusInternalServerError,
+			TestAfter: AfterRes{
+				Valid: false,
+				Type:  "",
 			},
 		},
 	}

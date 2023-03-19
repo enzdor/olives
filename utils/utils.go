@@ -19,7 +19,7 @@ type PathInfo struct {
 	Id int
 }
 
-const maxFileSize int64 = (1 << 30) / 2 // half a meg
+const maxFileSize int64 = (1 << 20) / 2 // half a meg
 
 func GetPathValues(ps []string, offset int) (PathInfo, error) {
 	r := PathInfo{
@@ -144,13 +144,13 @@ func ValidateNewPost(title string, text string, image multipart.File, header *mu
 }
 
 func DownloadImage(image multipart.File, header *multipart.FileHeader) (string, error) {
+	if header.Size > maxFileSize {
+		return "", errors.New("File size greater than 512 kilobytes. Choose a smaller file.")
+	}
+
 	buf := bytes.NewBuffer(nil)
 	if _, err := io.Copy(buf, image); err != nil {
 		return "", err
-	}
-
-	if header.Size > maxFileSize {
-		return "", errors.New("File size greater than 512 kilobytes. Choose a smaller file.")
 	}
 	path := fmt.Sprintf("%d%s", time.Now().Unix(), header.Filename)
 	

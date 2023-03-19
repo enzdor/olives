@@ -3,10 +3,13 @@ package controllers
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"io/ioutil"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strconv"
 	"testing"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -158,4 +161,49 @@ func TestPost(t *testing.T, testCases []PostTestCase, controller func(w http.Res
 			}
 		})
 	}
+}
+
+func NewPost(t *testing.T, writer *io.PipeWriter, form *multipart.Writer, path string, post sqlc.Post) {
+	defer writer.Close()
+
+	if err := form.WriteField("title", post.Title); err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+
+	if err := form.WriteField("text", post.Text); err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+
+	if err := form.WriteField("user_id", strconv.Itoa(int(post.UserID))); err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+
+	if err := form.WriteField("subolive_id", strconv.Itoa(int(post.SuboliveID))); err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+
+	file, err := os.Open("../" + path)
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+	defer file.Close()
+
+	w, err := form.CreateFormFile("image", path)
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+
+	_, err = io.Copy(w, file)
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+
+	form.Close()
 }

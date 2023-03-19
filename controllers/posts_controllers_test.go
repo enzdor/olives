@@ -3,7 +3,6 @@ package controllers
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -142,11 +141,6 @@ func TestCreatePost(t *testing.T) {
 		Post:   newPost,
 		Errors: consts.EmptyCreatePostErrors,
 	}
-	firstJsonRes, err := json.Marshal(firstExpectedRes)
-	if err != nil {
-		t.Errorf("expected no error, got %v", err)
-		return
-	}
 
 	pr, pw := io.Pipe()
 	form := multipart.NewWriter(pw)
@@ -207,7 +201,7 @@ func TestCreatePost(t *testing.T) {
 		{
 			Name:         "successful post post",
 			Req:          firstReq,
-			ExpectedRes:  firstJsonRes,
+			ExpectedRes:  firstExpectedRes,
 			ExpectedCode: http.StatusCreated,
 			TestAfter: AfterRes{
 				Valid: true,

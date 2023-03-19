@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
-	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -70,11 +69,6 @@ func TestCreateUser(t *testing.T) {
 		User: newUser,
 		Errors: consts.EmptyCreateUserErrors,
 	}
-	firstJsonRes, err := json.Marshal(firstExpectedRes)
-	if err != nil {
-		t.Errorf("expected no error, got %v", err)
-		return
-	}
 
 	firstBody := bytes.NewReader([]byte("username=" + newUser.Username + "&email=" + newUser.Email + "&password=" + newUser.Password))
 	firstReq := httptest.NewRequest(http.MethodPost, "/users", firstBody)
@@ -91,11 +85,6 @@ func TestCreateUser(t *testing.T) {
 			Password: "",
 		},
 		Errors: secErrs,
-	}
-	secondJsonRes, err := json.Marshal(secondExpectedRes)
-	if err != nil {
-		t.Errorf("expected no error, got %v", err)
-		return
 	}
 
 	secondBody := bytes.NewReader([]byte("username=" + secondUser.Username + "&email=" + secondUser.Email + "&password=" + secondUser.Password))
@@ -114,11 +103,6 @@ func TestCreateUser(t *testing.T) {
 		},
 		Errors: thirdErrs,
 	}
-	thirdJsonRes, err := json.Marshal(thirdExpectedRes)
-	if err != nil {
-		t.Errorf("expected no error, got %v", err)
-		return
-	}
 
 	thirdBody := bytes.NewReader([]byte("username=" + thirdUser.Username + "&email=" + thirdUser.Email + "&password=" + thirdUser.Password))
 	thirdReq := httptest.NewRequest(http.MethodPost, "/users", thirdBody)
@@ -136,11 +120,6 @@ func TestCreateUser(t *testing.T) {
 		},
 		Errors: fourthErrs,
 	}
-	fourthJsonRes, err := json.Marshal(fourthExpectedRes)
-	if err != nil {
-		t.Errorf("expected no error, got %v", err)
-		return
-	}
 
 	fourthBody := bytes.NewReader([]byte("username=" + fourthUser.Username + "&email=" + fourthUser.Email + "&password=" + fourthUser.Password))
 	fourthReq := httptest.NewRequest(http.MethodPost, "/users", fourthBody)
@@ -150,7 +129,7 @@ func TestCreateUser(t *testing.T) {
 		{
 			Name:         "successful create user request",
 			Req:          firstReq,
-			ExpectedRes:  firstJsonRes,
+			ExpectedRes:  firstExpectedRes,
 			ExpectedCode: http.StatusCreated,
 			TestAfter: AfterRes{
 				Valid: true,
@@ -160,7 +139,7 @@ func TestCreateUser(t *testing.T) {
 		{
 			Name:         "invalid email user request",
 			Req:          secondReq,
-			ExpectedRes:  secondJsonRes,
+			ExpectedRes:  secondExpectedRes,
 			ExpectedCode: http.StatusUnprocessableEntity,
 			TestAfter: AfterRes{
 				Valid: false,
@@ -170,7 +149,7 @@ func TestCreateUser(t *testing.T) {
 		{
 			Name:         "invalid username user request",
 			Req:          thirdReq,
-			ExpectedRes:  thirdJsonRes,
+			ExpectedRes:  thirdExpectedRes,
 			ExpectedCode: http.StatusUnprocessableEntity,
 			TestAfter: AfterRes{
 				Valid: false,
@@ -180,7 +159,7 @@ func TestCreateUser(t *testing.T) {
 		{
 			Name:         "invalid password user request",
 			Req:          fourthReq,
-			ExpectedRes:  fourthJsonRes,
+			ExpectedRes:  fourthExpectedRes,
 			ExpectedCode: http.StatusUnprocessableEntity,
 			TestAfter: AfterRes{
 				Valid: false,

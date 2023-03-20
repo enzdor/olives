@@ -86,9 +86,25 @@ func (h *Handler) GetSubolivePosts(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
-		utils.NewError(w, http.StatusInternalServerError, "could not parse file")
+	contentType := r.Header.Get("Content-Type")
+	content := strings.Split(contentType, ";")
+	var withImage bool = false
+	var errors [3]consts.FormInputError
+	switch content[0] {
+	case "application/x-www-form-urlencoded":
+		withImage = false
+	case "multipart/form-data":
+		withImage = true
+	default:
+		utils.NewError(w, http.StatusBadRequest, "could not find Content-Type")
 		return
+	}
+
+	if withImage {
+		if err := r.ParseMultipartForm(32 << 20); err != nil {
+			utils.NewError(w, http.StatusNotFound, "could not parse form")
+			return
+		}
 	}
 	title := strings.TrimSpace(r.FormValue("title"))
 	text := strings.TrimSpace(r.FormValue("text"))
@@ -103,55 +119,92 @@ func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	image, header, err := r.FormFile("image")
-	if err != nil {
-		utils.NewError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	defer image.Close()
+	if withImage {
+		image, header, err := r.FormFile("image")
+		if err != nil {
+			utils.NewError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+		defer image.Close()
 
-	errs, valid, imgPath:= utils.ValidateNewPost(title, text, image, header)
-	if !valid {
-		utils.NewErrorBody(w, http.StatusInternalServerError, consts.ResCreatedPost{
-			Post: sqlc.Post{
-				PostID: 0,
-				Title: title,
-				Text: text,
-				CreatedAt: time.Now(),
-				UserID: 0,
-				SuboliveID: 0,
-				ImageID: sql.NullInt32{
-					Int32: 0,
-					Valid: false,
+		errs, valid, imgPath:= utils.ValidateNewPostWithImage(title, text, image, header)
+		if !valid {
+			utils.NewErrorBody(w, http.StatusInternalServerError, consts.ResCreatedPost{
+				Post: sqlc.Post{
+					PostID: 0,
+					Title: title,
+					Text: text,
+					CreatedAt: time.Now(),
+					UserID: 0,
+					SuboliveID: 0,
+					ImageID: sql.NullInt32{
+						Int32: 0,
+						Valid: false,
+					},
 				},
+				Errors: errs,
+			})
+			return
+		}
+		errors = errs
+
+		_, err = h.q.CreateImage(context.Background(), imgPath)
+		if err != nil {
+			utils.NewError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		img, err := h.q.GetNewestImage(context.Background())
+		if err != nil {
+			utils.NewError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		_, err = h.q.CreatePost(context.Background(), sqlc.CreatePostParams{
+			Title: title,
+			Text: text,
+			UserID: int32(userId),
+			SuboliveID: int32(suboliveId),
+			ImageID: sql.NullInt32{
+				Int32: img.ImageID,
+				Valid: true,
 			},
-			Errors: errs,
 		})
-		return
+
+	} else {
+		errs, valid := utils.ValidateNewPost(title, text)
+		if !valid {
+			utils.NewErrorBody(w, http.StatusInternalServerError, consts.ResCreatedPost{
+				Post: sqlc.Post{
+					PostID: 0,
+					Title: title,
+					Text: text,
+					CreatedAt: time.Now(),
+					UserID: 0,
+					SuboliveID: 0,
+					ImageID: sql.NullInt32{
+						Int32: 0,
+						Valid: false,
+					},
+				},
+				Errors: errs,
+			})
+			return
+		}
+		errors = errs
+
+		_, err = h.q.CreatePost(context.Background(), sqlc.CreatePostParams{
+			Title: title,
+			Text: text,
+			UserID: int32(userId),
+			SuboliveID: int32(suboliveId),
+			ImageID: sql.NullInt32{
+				Int32: 0,
+				Valid: false,
+			},
+		})
 	}
 
-	_, err = h.q.CreateImage(context.Background(), imgPath)
-	if err != nil {
-		utils.NewError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	img, err := h.q.GetNewestImage(context.Background())
-	if err != nil {
-		utils.NewError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	_, err = h.q.CreatePost(context.Background(), sqlc.CreatePostParams{
-		Title: title,
-		Text: text,
-		UserID: int32(userId),
-		SuboliveID: int32(suboliveId),
-		ImageID: sql.NullInt32{
-			Int32: img.ImageID,
-			Valid: true,
-		},
-	})
 	post, err := h.q.GetNewestPost(context.Background())
 	if err != nil {
 		utils.NewError(w, http.StatusInternalServerError, err.Error())
@@ -170,7 +223,7 @@ func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
 
 	res := consts.ResCreatedPost{
 		Post: resPost,
-		Errors: errs,
+		Errors: errors,
 	}
 
 	utils.NewResponse(w, http.StatusCreated, res)

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"io"
@@ -188,6 +189,16 @@ func TestCreatePost(t *testing.T) {
 	}
 	secondReq.Header.Set("Content-Type", form2.FormDataContentType())
 
+	thirdPost := utils.RandomPost()
+	thirdPost.PostID = newestPost.PostID + 2
+	thirdBody := bytes.NewReader([]byte("title=" + thirdPost.Title + "&text=" + thirdPost.Text + "&user_id=" + strconv.Itoa(int(thirdPost.UserID)) + "&subolive_id=" + strconv.Itoa(int(thirdPost.SuboliveID)) + "&image="))
+	thirdReq := httptest.NewRequest(http.MethodPost, "/posts", thirdBody)
+	thirdReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	thirdExpectedRes := consts.ResCreatedPost{
+		Post:   thirdPost,
+		Errors: consts.EmptyCreatePostErrors,
+	}
+
 	testCases := []PostTestCase{
 		{
 			Name:         "successful post post",
@@ -207,6 +218,16 @@ func TestCreatePost(t *testing.T) {
 			TestAfter: AfterRes{
 				Valid: false,
 				Type:  "",
+			},
+		},
+		{
+			Name:         "succesful post without image",
+			Req:          thirdReq,
+			ExpectedRes:  thirdExpectedRes,
+			ExpectedCode: http.StatusCreated,
+			TestAfter: AfterRes{
+				Valid: true,
+				Type:  "post",
 			},
 		},
 	}

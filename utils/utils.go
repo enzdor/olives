@@ -94,8 +94,7 @@ func ValidateNewUser(email string, username string, password string) (errs [3]co
 	return errs, valid
 }
 
-func ValidateNewPost(title string, text string, image multipart.File, header *multipart.FileHeader) (errs [3]consts.FormInputError, valid bool, imgPath string){
-	imgPath = ""
+func ValidateNewPost(title string, text string) (errs [3]consts.FormInputError, valid bool){
 	valid = true
 	errs = consts.EmptyCreatePostErrors
 
@@ -130,6 +129,14 @@ func ValidateNewPost(title string, text string, image multipart.File, header *mu
 		errs[1].Message = "This field must have less than 1275 characters"
 		valid = false
 	}
+
+
+	return errs, valid
+}
+
+func ValidateNewPostWithImage(title string, text string, image multipart.File, header *multipart.FileHeader) (errs [3]consts.FormInputError, valid bool, imgPath string){
+	errs, valid = ValidateNewPost(title, text)
+	imgPath = ""
 
 	path, err := DownloadImage(image, header)
 	if err != nil {

@@ -82,6 +82,7 @@ func TestCreateUser(t *testing.T) {
 			Email: secondUser.Email,
 			Username: secondUser.Username,
 			Password: "",
+			Admin: false,
 		},
 		Errors: secErrs,
 	}
@@ -100,6 +101,7 @@ func TestCreateUser(t *testing.T) {
 			Email: thirdUser.Email,
 			Username: thirdUser.Username,
 			Password: "",
+			Admin: false,
 		},
 		Errors: thirdErrs,
 	}
@@ -119,6 +121,7 @@ func TestCreateUser(t *testing.T) {
 			Email: fourthUser.Email,
 			Username: fourthUser.Username,
 			Password: "",
+			Admin: false,
 		},
 		Errors: fourthErrs,
 	}

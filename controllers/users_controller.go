@@ -64,6 +64,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 				Email: email,
 				Username: username,
 				Password: "",
+				Admin: false,
 			},
 			Errors: errs,
 		})
@@ -73,6 +74,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		Email: email,
 		Username: username,
 		Password: password,
+		Admin: false,
 	})
 	if err != nil {
 		utils.NewError(w, http.StatusInternalServerError, err.Error())

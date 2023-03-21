@@ -31,6 +31,7 @@ func RandomUser() sqlc.User {
 		Email:    RandomString(5) + "@" + RandomString(6) + ".com",
 		Username: RandomString(10),
 		Password: RandomString(25),
+		Admin: false,
 	}
 }
 

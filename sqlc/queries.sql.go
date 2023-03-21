@@ -99,18 +99,24 @@ func (q *Queries) CreateSubolive(ctx context.Context, name string) (sql.Result, 
 }
 
 const createUser = `-- name: CreateUser :execresult
-INSERT INTO users (email, username, password)
-VALUES (?, ?, ?)
+INSERT INTO users (email, username, password, admin)
+VALUES (?, ?, ?, ?)
 `
 
 type CreateUserParams struct {
 	Email    string `json:"email"`
 	Username string `json:"username"`
 	Password string `json:"password"`
+	Admin    bool   `json:"admin"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (sql.Result, error) {
-	return q.db.ExecContext(ctx, createUser, arg.Email, arg.Username, arg.Password)
+	return q.db.ExecContext(ctx, createUser,
+		arg.Email,
+		arg.Username,
+		arg.Password,
+		arg.Admin,
+	)
 }
 
 const deletePost = `-- name: DeletePost :execresult
@@ -202,7 +208,7 @@ func (q *Queries) GetNewestPost(ctx context.Context) (GetNewestPostRow, error) {
 }
 
 const getNewestUser = `-- name: GetNewestUser :one
-SELECT user_id, email, username, password FROM users
+SELECT user_id, email, username, password, admin FROM users
 WHERE user_id = (
 	SELECT MAX(user_id) FROM users
 )
@@ -216,6 +222,7 @@ func (q *Queries) GetNewestUser(ctx context.Context) (User, error) {
 		&i.Email,
 		&i.Username,
 		&i.Password,
+		&i.Admin,
 	)
 	return i, err
 }
@@ -455,7 +462,7 @@ func (q *Queries) GetSubolives(ctx context.Context) ([]Subolife, error) {
 }
 
 const getUser = `-- name: GetUser :one
-SELECT user_id, email, username, password FROM users
+SELECT user_id, email, username, password, admin FROM users
 WHERE user_id = ?
 LIMIT 1
 `
@@ -468,12 +475,13 @@ func (q *Queries) GetUser(ctx context.Context, userID int32) (User, error) {
 		&i.Email,
 		&i.Username,
 		&i.Password,
+		&i.Admin,
 	)
 	return i, err
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT user_id, email, username, password FROM users
+SELECT user_id, email, username, password, admin FROM users
 WHERE email = ?
 LIMIT 1
 `
@@ -486,6 +494,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.Email,
 		&i.Username,
 		&i.Password,
+		&i.Admin,
 	)
 	return i, err
 }

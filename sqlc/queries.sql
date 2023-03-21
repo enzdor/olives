@@ -116,8 +116,8 @@ WHERE user_id = (
 );
 
 -- name: CreateUser :execresult
-INSERT INTO users (email, username, password)
-VALUES (?, ?, ?);
+INSERT INTO users (email, username, password, admin)
+VALUES (?, ?, ?, ?);
 
 -- name: DeleteUser :execresult
 DELETE FROM users

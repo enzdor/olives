@@ -20,7 +20,7 @@ func (h *Handler) GetOrDeleteUser(w http.ResponseWriter, r *http.Request) {
 		h.GetUser(w, r)
 		return
 	default:
-		utils.NewError(w, http.StatusMethodNotAllowed, "this method is not allowed: " + r.Method)
+		utils.NewError(w, http.StatusMethodNotAllowed, consts.UnsupportedMethod.Error())
 	}
 
 }
@@ -48,6 +48,11 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		utils.NewError(w, http.StatusMethodNotAllowed, consts.UnsupportedMethod.Error())
+		return
+	}
+
 	email := strings.TrimSpace(r.FormValue("email"))
 	username := strings.TrimSpace(r.FormValue("username"))
 	password := strings.TrimSpace(r.FormValue("password"))

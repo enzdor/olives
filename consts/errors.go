@@ -18,6 +18,8 @@ var PageNotAnInteger = errors.New("path: page not an integer")
 
 var SuboliveNonExistant = errors.New("path: subolive does'nt exist")
 
+var UnsupportedMethod = errors.New("Unsupported method")
+
 type FormInputError struct {
 	Bool bool `json:"bool"`
 	Message string `json:"msg"`

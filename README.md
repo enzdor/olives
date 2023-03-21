@@ -4,7 +4,7 @@ A Reddit clone. The back-end will be written in go while the front-end will be m
 
 ## TODO
 
-- check request method before executing handler
+- create admin column for users
 - use sessions. create methods:
 	- new session
 	- delete session

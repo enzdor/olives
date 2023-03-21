@@ -14,6 +14,11 @@ import (
 )
 
 func (h *Handler) GetPost(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		utils.NewError(w, http.StatusMethodNotAllowed, consts.UnsupportedMethod.Error())
+		return
+	}
+
 	v, err := utils.GetPathValues(strings.Split(r.URL.Path, "/"), 0)
 	if err != nil {
 		utils.NewError(w, http.StatusBadRequest, err.Error())
@@ -37,6 +42,11 @@ func (h *Handler) GetPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetSubolivePosts(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		utils.NewError(w, http.StatusMethodNotAllowed, consts.UnsupportedMethod.Error())
+		return
+	}
+
 	v, err := utils.GetPathValues(strings.Split(r.URL.Path, "/"), 1)
 	if err != nil {
 		utils.NewError(w, http.StatusBadRequest, err.Error())
@@ -86,6 +96,11 @@ func (h *Handler) GetSubolivePosts(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		utils.NewError(w, http.StatusMethodNotAllowed, consts.UnsupportedMethod.Error())
+		return
+	}
+
 	contentType := r.Header.Get("Content-Type")
 	content := strings.Split(contentType, ";")
 	var withImage bool = false

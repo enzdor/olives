@@ -11,7 +11,7 @@ import (
 
 const alphabet = "abcdefghijklmnopqrstuvwxyz"
 
-func randomString(n int) string {
+func RandomString(n int) string {
 	var sb strings.Builder
 	k := len(alphabet)
 	rand.Seed(time.Now().Unix())
@@ -28,9 +28,9 @@ func RandomUser() sqlc.User {
 	rand.Seed(time.Now().Unix())
 	return sqlc.User{
 		UserID:   int32(rand.Intn(100)),
-		Email:    randomString(5) + "@" + randomString(6) + ".com",
-		Username: randomString(10),
-		Password: randomString(25),
+		Email:    RandomString(5) + "@" + RandomString(6) + ".com",
+		Username: RandomString(10),
+		Password: RandomString(25),
 	}
 }
 
@@ -38,8 +38,8 @@ func RandomPost() sqlc.Post {
 	rand.Seed(time.Now().Unix())
 	return sqlc.Post{
 		PostID: int32(rand.Intn(100)),
-		Title: randomString(100),
-		Text: randomString(1000),
+		Title: RandomString(100),
+		Text: RandomString(1000),
 		CreatedAt: time.Now(),
 		UserID: int32(rand.Intn(100)),
 		ImageID: sql.NullInt32{

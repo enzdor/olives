@@ -110,7 +110,7 @@ func ValidateNewPost(title string, text string) (errs [3]consts.FormInputError, 
 	}
 	if len(title) > 255 {
 		errs[0].Bool = true
-		errs[0].Message = "This field must have less than 275 characters"
+		errs[0].Message = "This field must have less than 255 characters"
 		valid = false
 	}
 

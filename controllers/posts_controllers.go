@@ -129,14 +129,14 @@ func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
 
 		errs, valid, imgPath:= utils.ValidateNewPostWithImage(title, text, image, header)
 		if !valid {
-			utils.NewErrorBody(w, http.StatusInternalServerError, consts.ResCreatedPost{
+			utils.NewErrorBody(w, http.StatusUnprocessableEntity, consts.ResCreatedPost{
 				Post: sqlc.Post{
 					PostID: 0,
 					Title: title,
 					Text: text,
 					CreatedAt: time.Now(),
-					UserID: 0,
-					SuboliveID: 0,
+					UserID: int32(userId),
+					SuboliveID: int32(suboliveId),
 					ImageID: sql.NullInt32{
 						Int32: 0,
 						Valid: false,
@@ -174,14 +174,14 @@ func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	} else {
 		errs, valid := utils.ValidateNewPost(title, text)
 		if !valid {
-			utils.NewErrorBody(w, http.StatusInternalServerError, consts.ResCreatedPost{
+			utils.NewErrorBody(w, http.StatusUnprocessableEntity, consts.ResCreatedPost{
 				Post: sqlc.Post{
 					PostID: 0,
 					Title: title,
 					Text: text,
 					CreatedAt: time.Now(),
-					UserID: 0,
-					SuboliveID: 0,
+					UserID: int32(userId),
+					SuboliveID: int32(suboliveId),
 					ImageID: sql.NullInt32{
 						Int32: 0,
 						Valid: false,

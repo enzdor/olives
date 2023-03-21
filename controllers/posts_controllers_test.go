@@ -148,7 +148,7 @@ func TestCreatePost(t *testing.T) {
 		Title:      "",
 		Text:       "",
 		CreatedAt:  time.Now(),
-		UserID:     0,
+		UserID:     20,
 		SuboliveID: 4,
 		ImageID: sql.NullInt32{
 			Int32: 0,
@@ -199,6 +199,34 @@ func TestCreatePost(t *testing.T) {
 		Errors: consts.EmptyCreatePostErrors,
 	}
 
+	fourthPost := newPost2
+	fourthPost.Text = "bla"
+	fourthPost.Title = "a valid title"
+	fourthErrs := consts.EmptyCreatePostErrors
+	fourthErrs[1].Bool = true
+	fourthErrs[1].Message = "This field must be greater than 6 characters"
+	fourthBody := bytes.NewReader([]byte("title=" + fourthPost.Title + "&text=" + fourthPost.Text + "&user_id=" + strconv.Itoa(int(fourthPost.UserID)) + "&subolive_id=" + strconv.Itoa(int(fourthPost.SuboliveID)) + "&image="))
+	fourthReq := httptest.NewRequest(http.MethodPost, "/posts", fourthBody)
+	fourthReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	fourthExpectedRes := consts.ResCreatedPost{
+		Post:   fourthPost,
+		Errors: fourthErrs,
+	}
+
+	fifthPost := newPost2
+	fifthPost.Text = "a valid text bla bla"
+	fifthPost.Title = utils.RandomString(300)
+	fifthErrs := consts.EmptyCreatePostErrors
+	fifthErrs[0].Bool = true
+	fifthErrs[0].Message = "This field must have less than 255 characters"
+	fifthBody := bytes.NewReader([]byte("title=" + fifthPost.Title + "&text=" + fifthPost.Text + "&user_id=" + strconv.Itoa(int(fifthPost.UserID)) + "&subolive_id=" + strconv.Itoa(int(fifthPost.SuboliveID)) + "&image="))
+	fifthReq := httptest.NewRequest(http.MethodPost, "/posts", fifthBody)
+	fifthReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	fifthExpectedRes := consts.ResCreatedPost{
+		Post:   fifthPost,
+		Errors: fifthErrs,
+	}
+
 	testCases := []PostTestCase{
 		{
 			Name:         "successful post post",
@@ -214,7 +242,7 @@ func TestCreatePost(t *testing.T) {
 			Name:         "unsuccessful post post, image too large",
 			Req:          secondReq,
 			ExpectedRes:  secondExpectedRes,
-			ExpectedCode: http.StatusInternalServerError,
+			ExpectedCode: http.StatusUnprocessableEntity,
 			TestAfter: AfterRes{
 				Valid: false,
 				Type:  "",
@@ -228,6 +256,26 @@ func TestCreatePost(t *testing.T) {
 			TestAfter: AfterRes{
 				Valid: true,
 				Type:  "post",
+			},
+		},
+		{
+			Name:         "unsuccesful post without image, text too short",
+			Req:          fourthReq,
+			ExpectedRes:  fourthExpectedRes,
+			ExpectedCode: http.StatusUnprocessableEntity,
+			TestAfter: AfterRes{
+				Valid: false,
+				Type:  "",
+			},
+		},
+		{
+			Name:         "unsuccesful post without image, title too long",
+			Req:          fifthReq,
+			ExpectedRes:  fifthExpectedRes,
+			ExpectedCode: http.StatusUnprocessableEntity,
+			TestAfter: AfterRes{
+				Valid: false,
+				Type:  "",
 			},
 		},
 	}

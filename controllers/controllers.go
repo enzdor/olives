@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"io"
@@ -143,7 +144,7 @@ func TestPost(t *testing.T, testCases []PostTestCase, controller func(w http.Res
 					}
 
 					if string(resBody) != string(resJson) {
-						t.Errorf("banana expected response body to be equal to: \n%v\ngot:\n%v", string(resJson), string(resBody))
+						t.Errorf("expected response body to be equal to: \n%v\ngot:\n%v", string(resJson), string(resBody))
 						return
 					}
 				}
@@ -163,7 +164,7 @@ func TestPost(t *testing.T, testCases []PostTestCase, controller func(w http.Res
 	}
 }
 
-func NewPost(t *testing.T, writer *io.PipeWriter, form *multipart.Writer, path string, post sqlc.Post) {
+func NewPostRequestPostImage(t *testing.T, writer *io.PipeWriter, form *multipart.Writer, path string, post sqlc.Post) {
 	defer writer.Close()
 
 	if err := form.WriteField("title", post.Title); err != nil {
@@ -207,3 +208,31 @@ func NewPost(t *testing.T, writer *io.PipeWriter, form *multipart.Writer, path s
 
 	form.Close()
 }
+
+func NewPostRequestUser(u sqlc.User, target string) (*http.Request, error) {
+	body := bytes.NewReader([]byte("username=" + u.Username + "&email=" + u.Email + "&password=" + u.Password))
+	req, err:= http.NewRequest(http.MethodPost, target, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	return req, nil
+}
+
+func NewPostRequestPost(p sqlc.Post, target string) (*http.Request, error) {
+	body := bytes.NewReader([]byte("title=" + p.Title + "&text=" + p.Text + "&user_id=" + strconv.Itoa(int(p.UserID)) + "&subolive_id=" + strconv.Itoa(int(p.SuboliveID)) + "&image="))
+	req, err:= http.NewRequest(http.MethodPost, target, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	return req, nil
+}
+
+
+
+
+
+

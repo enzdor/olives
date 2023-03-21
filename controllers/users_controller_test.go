@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
 	"net/http"
@@ -64,15 +63,15 @@ func TestCreateUser(t *testing.T) {
 
 	newUser := utils.RandomUser()
 	newUser.UserID = newestUser.UserID + 1
-
 	firstExpectedRes := consts.ResCreateUser {
 		User: newUser,
 		Errors: consts.EmptyCreateUserErrors,
 	}
-
-	firstBody := bytes.NewReader([]byte("username=" + newUser.Username + "&email=" + newUser.Email + "&password=" + newUser.Password))
-	firstReq := httptest.NewRequest(http.MethodPost, "/users", firstBody)
-	firstReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	firstReq, err := NewPostRequestUser(newUser, "/users")
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
 
 	secondUser := newUser
 	secondUser.Email = "notanemail"
@@ -86,10 +85,11 @@ func TestCreateUser(t *testing.T) {
 		},
 		Errors: secErrs,
 	}
-
-	secondBody := bytes.NewReader([]byte("username=" + secondUser.Username + "&email=" + secondUser.Email + "&password=" + secondUser.Password))
-	secondReq := httptest.NewRequest(http.MethodPost, "/users", secondBody)
-	secondReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	secondReq, err := NewPostRequestUser(secondUser, "/users")
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
 
 	thirdUser := newUser
 	thirdUser.Username = "shor"
@@ -103,10 +103,12 @@ func TestCreateUser(t *testing.T) {
 		},
 		Errors: thirdErrs,
 	}
+	thirdReq, err := NewPostRequestUser(thirdUser, "/users")
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
 
-	thirdBody := bytes.NewReader([]byte("username=" + thirdUser.Username + "&email=" + thirdUser.Email + "&password=" + thirdUser.Password))
-	thirdReq := httptest.NewRequest(http.MethodPost, "/users", thirdBody)
-	thirdReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	fourthUser := newUser
 	fourthUser.Password = "shor"
@@ -120,10 +122,11 @@ func TestCreateUser(t *testing.T) {
 		},
 		Errors: fourthErrs,
 	}
-
-	fourthBody := bytes.NewReader([]byte("username=" + fourthUser.Username + "&email=" + fourthUser.Email + "&password=" + fourthUser.Password))
-	fourthReq := httptest.NewRequest(http.MethodPost, "/users", fourthBody)
-	fourthReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	fourthReq, err := NewPostRequestUser(fourthUser, "/users")
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
 
 	testCases := []PostTestCase{
 		{

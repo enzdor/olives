@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
 	"io"
@@ -155,22 +154,30 @@ func TestCreatePost(t *testing.T) {
 			Valid: false,
 		},
 	}
-	errs2 := consts.EmptyCreatePostErrors
-	errs2[0].Bool = true
-	errs2[0].Message = "This field must be greater than 6 characters"
-	errs2[1].Bool = true
-	errs2[1].Message = "This field must be greater than 6 characters"
-	errs2[2].Bool = true
-	errs2[2].Message = "File size greater than 512 kilobytes. Choose a smaller file."
 	secondExpectedRes := consts.ResCreatedPost{
 		Post:   newPost2,
-		Errors: errs2,
+		Errors: [3]consts.FormInputError{
+			{
+				Bool: true,
+				Message: "This field is required",
+				Field: "title",
+			},
+			{
+				Bool: true,
+				Message: "This field is required",
+				Field: "text",
+			},
+			{
+				Bool: true,
+				Message: "File size greater than 512 kilobytes. Choose a smaller file.",
+				Field: "image",
+			},
+		},
 	}
 
 	pr, pw := io.Pipe()
 	form := multipart.NewWriter(pw)
-	go NewPost(t, pw, form, "test.png", newPost)
-
+	go NewPostRequestPostImage(t, pw, form, "test.png", newPost)
 	firstReq, err := http.NewRequest(http.MethodPost, "/posts", pr)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
@@ -180,8 +187,7 @@ func TestCreatePost(t *testing.T) {
 
 	pr2, pw2 := io.Pipe()
 	form2 := multipart.NewWriter(pw2)
-	go NewPost(t, pw2, form2, "cheese.png", newPost2)
-
+	go NewPostRequestPostImage(t, pw2, form2, "cheese.png", newPost2)
 	secondReq, err := http.NewRequest(http.MethodPost, "/posts", pr2)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
@@ -190,10 +196,11 @@ func TestCreatePost(t *testing.T) {
 	secondReq.Header.Set("Content-Type", form2.FormDataContentType())
 
 	thirdPost := utils.RandomPost()
-	thirdPost.PostID = newestPost.PostID + 2
-	thirdBody := bytes.NewReader([]byte("title=" + thirdPost.Title + "&text=" + thirdPost.Text + "&user_id=" + strconv.Itoa(int(thirdPost.UserID)) + "&subolive_id=" + strconv.Itoa(int(thirdPost.SuboliveID)) + "&image="))
-	thirdReq := httptest.NewRequest(http.MethodPost, "/posts", thirdBody)
-	thirdReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	thirdReq, err := NewPostRequestPost(thirdPost, "/posts")
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
 	thirdExpectedRes := consts.ResCreatedPost{
 		Post:   thirdPost,
 		Errors: consts.EmptyCreatePostErrors,
@@ -205,9 +212,11 @@ func TestCreatePost(t *testing.T) {
 	fourthErrs := consts.EmptyCreatePostErrors
 	fourthErrs[1].Bool = true
 	fourthErrs[1].Message = "This field must be greater than 6 characters"
-	fourthBody := bytes.NewReader([]byte("title=" + fourthPost.Title + "&text=" + fourthPost.Text + "&user_id=" + strconv.Itoa(int(fourthPost.UserID)) + "&subolive_id=" + strconv.Itoa(int(fourthPost.SuboliveID)) + "&image="))
-	fourthReq := httptest.NewRequest(http.MethodPost, "/posts", fourthBody)
-	fourthReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	fourthReq, err := NewPostRequestPost(fourthPost, "/posts")
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
 	fourthExpectedRes := consts.ResCreatedPost{
 		Post:   fourthPost,
 		Errors: fourthErrs,
@@ -219,9 +228,7 @@ func TestCreatePost(t *testing.T) {
 	fifthErrs := consts.EmptyCreatePostErrors
 	fifthErrs[0].Bool = true
 	fifthErrs[0].Message = "This field must have less than 255 characters"
-	fifthBody := bytes.NewReader([]byte("title=" + fifthPost.Title + "&text=" + fifthPost.Text + "&user_id=" + strconv.Itoa(int(fifthPost.UserID)) + "&subolive_id=" + strconv.Itoa(int(fifthPost.SuboliveID)) + "&image="))
-	fifthReq := httptest.NewRequest(http.MethodPost, "/posts", fifthBody)
-	fifthReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	fifthReq, err := NewPostRequestPost(fifthPost, "/posts")
 	fifthExpectedRes := consts.ResCreatedPost{
 		Post:   fifthPost,
 		Errors: fifthErrs,
@@ -254,7 +261,7 @@ func TestCreatePost(t *testing.T) {
 	}
 	pr6, pw6 := io.Pipe()
 	form6 := multipart.NewWriter(pw6)
-	go NewPost(t, pw6, form6, "test.png", sixthPost)
+	go NewPostRequestPostImage(t, pw6, form6, "test.png", sixthPost)
 
 	sixthReq, err := http.NewRequest(http.MethodPost, "/posts", pr6)
 	if err != nil {
@@ -265,6 +272,26 @@ func TestCreatePost(t *testing.T) {
 	sixthExpectedRes := consts.ResCreatedPost{
 		Post: sixthPost,
 		Errors: sixthErrs,
+	}
+
+	pr7, pw7 := io.Pipe()
+	form7 := multipart.NewWriter(pw7)
+	go NewPostRequestPostImage(t, pw7, form7, "textfile.txt", newPost)
+
+	seventhReq, err := http.NewRequest(http.MethodPost, "/posts", pr7)
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+	seventhErrs := consts.EmptyCreatePostErrors
+	seventhErrs[2].Bool = true
+	seventhPost := newPost
+	seventhPost.PostID = 0
+	seventhErrs[2].Message = "File type should be jpeg or png"
+	seventhReq.Header.Set("Content-Type", form7.FormDataContentType())
+	seventhExpectedRes := consts.ResCreatedPost{
+		Post: seventhPost,
+		Errors: seventhErrs,
 	}
 
 	testCases := []PostTestCase{
@@ -322,6 +349,16 @@ func TestCreatePost(t *testing.T) {
 			Name:         "unsuccessful post post with image, title short text required",
 			Req:          sixthReq,
 			ExpectedRes:  sixthExpectedRes,
+			ExpectedCode: http.StatusUnprocessableEntity,
+			TestAfter: AfterRes{
+				Valid: false,
+				Type:  "",
+			},
+		},
+		{
+			Name:         "unsuccessful post post, file not png or jpeg",
+			Req:          seventhReq,
+			ExpectedRes:  seventhExpectedRes,
 			ExpectedCode: http.StatusUnprocessableEntity,
 			TestAfter: AfterRes{
 				Valid: false,

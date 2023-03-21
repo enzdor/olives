@@ -5,9 +5,6 @@ A Reddit clone. The back-end will be written in go while the front-end will be m
 ## TODO
 
 - check request method before executing handler
-- check if file uploaded is an image
-- create function to make it easier to create test post requests
-- test post post with invalid fields
 - use sessions. create methods:
 	- new session
 	- delete session
@@ -38,7 +35,7 @@ A Reddit clone. The back-end will be written in go while the front-end will be m
 
 - /getSubolivePosts/:id?page=x     GET       done            to get all the posts in a subolive to show in the subolive page (create version of this without including comments for performance or just be lazy and keep this one)
 - /getPost/:id                     GET       done            to see the info of a post
-- /createPost                      POST      next            to create a new post
+- /createPost                      POST      done            to create a new post
 - /createComment/:postId           POST                      to create a comment
 - /getUser/:userId                 GET       done            to get user info
 - /createUser                      POST      done            to create a new user
@@ -48,11 +45,10 @@ A Reddit clone. The back-end will be written in go while the front-end will be m
 
 ## Back-end helper functions
 
-- JWT
 - bcrypt
 - middlewares for auth
 - Image handling (creating and deleting)
-- deleting posts when:
+- deleting posts. need to decide whether to implement a reaper that is excecuted every ten minutes or some other time interval or to excecute a function that checks the conditions for deletion every time a request is made to the server. when:
 	- a new post wants to be created and the number of maximum posts has been reached
 	- the limit of comments has been reached in a post
 - maybe add search function to be able to search for posts

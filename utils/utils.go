@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"mime/multipart"
+	"net/http"
 	"net/mail"
 	"os"
 	"strconv"
@@ -144,6 +145,15 @@ func ValidateNewPostWithImage(title string, text string, image multipart.File, h
 func DownloadImage(image multipart.File, header *multipart.FileHeader) (string, error) {
 	if header.Size > maxFileSize {
 		return "", errors.New("File size greater than 512 kilobytes. Choose a smaller file.")
+	}
+
+	tBuf := make([]byte, 512)
+	if _, err := image.Read(tBuf); err != nil {
+		return "", errors.New("Error when checking file type")
+	}
+	contentType := http.DetectContentType(tBuf)
+	if contentType != "image/png" && contentType != "image/jpeg" {
+		return "", errors.New("File type should be jpeg or png")
 	}
 
 	buf := bytes.NewBuffer(nil)

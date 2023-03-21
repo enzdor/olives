@@ -227,6 +227,46 @@ func TestCreatePost(t *testing.T) {
 		Errors: fifthErrs,
 	}
 
+	sixthPost := newPost
+	sixthPost.PostID = 0
+	sixthPost.Title = "sh"
+	sixthPost.Text = ""
+	sixthPost.ImageID = sql.NullInt32{
+		Int32: 0,
+		Valid: false,
+	}
+	sixthErrs := [3]consts.FormInputError{
+		{
+			Bool: true,
+			Message: "This field must be greater than 6 characters",
+			Field: "title",
+		},
+		{
+			Bool: true,
+			Message: "This field is required",
+			Field: "text",
+		},
+		{
+			Bool: false,
+			Message: "",
+			Field: "image",
+		},
+	}
+	pr6, pw6 := io.Pipe()
+	form6 := multipart.NewWriter(pw6)
+	go NewPost(t, pw6, form6, "test.png", sixthPost)
+
+	sixthReq, err := http.NewRequest(http.MethodPost, "/posts", pr6)
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+	sixthReq.Header.Set("Content-Type", form6.FormDataContentType())
+	sixthExpectedRes := consts.ResCreatedPost{
+		Post: sixthPost,
+		Errors: sixthErrs,
+	}
+
 	testCases := []PostTestCase{
 		{
 			Name:         "successful post post",
@@ -272,6 +312,16 @@ func TestCreatePost(t *testing.T) {
 			Name:         "unsuccesful post without image, title too long",
 			Req:          fifthReq,
 			ExpectedRes:  fifthExpectedRes,
+			ExpectedCode: http.StatusUnprocessableEntity,
+			TestAfter: AfterRes{
+				Valid: false,
+				Type:  "",
+			},
+		},
+		{
+			Name:         "unsuccessful post post with image, title short text required",
+			Req:          sixthReq,
+			ExpectedRes:  sixthExpectedRes,
 			ExpectedCode: http.StatusUnprocessableEntity,
 			TestAfter: AfterRes{
 				Valid: false,

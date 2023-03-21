@@ -5,13 +5,19 @@ A Reddit clone. The back-end will be written in go while the front-end will be m
 ## TODO
 
 - check request method before executing handler
+- check if file uploaded is an image
+- create function to make it easier to create test post requests
 - test post post with invalid fields
+- use sessions. create methods:
+	- new session
+	- delete session
+	- get session
+	- get user from session?
 
 ## Dependencies Summary
 
 - go
 	- sqlc
-	- JWT
 	- bcrypt
 - mariadb
 - react

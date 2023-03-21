@@ -52,8 +52,7 @@ func ValidateNewUser(email string, username string, password string) (errs [3]co
 		errs[0].Bool = true
 		errs[0].Message = "Invalid email address"
 		valid = false
-	}
-	if len(email) > 255 {
+	} else if len(email) > 255 {
 		errs[0].Bool = true
 		errs[0].Message = "This field must have less than 275 characters"
 		valid = false
@@ -63,13 +62,11 @@ func ValidateNewUser(email string, username string, password string) (errs [3]co
 		errs[1].Bool = true
 		errs[1].Message = "This field is required"
 		valid = false
-	}
-	if len(username) < 5 {
+	} else if len(username) < 5 {
 		errs[1].Bool = true
 		errs[1].Message = "This field must be greater than 6 characters"
 		valid = false
-	}
-	if len(username) > 255 {
+	} else if len(username) > 255 {
 		errs[1].Bool = true
 		errs[1].Message = "This field must have less than 275 characters"
 		valid = false
@@ -79,13 +76,11 @@ func ValidateNewUser(email string, username string, password string) (errs [3]co
 		errs[2].Bool = true
 		errs[2].Message = "This field is required"
 		valid = false
-	}
-	if len(password) < 5 {
+	} else if len(password) < 5 {
 		errs[2].Bool = true
 		errs[2].Message = "This field must be greater than 6 characters"
 		valid = false
-	}
-	if len(password) > 255 {
+	} else if len(password) > 255 {
 		errs[2].Bool = true
 		errs[2].Message = "This field must have less than 275 characters"
 		valid = false
@@ -102,13 +97,11 @@ func ValidateNewPost(title string, text string) (errs [3]consts.FormInputError, 
 		errs[0].Bool = true
 		errs[0].Message = "This field is required"
 		valid = false
-	}
-	if len(title) < 5 {
+	} else if len(title) < 5 {
 		errs[0].Bool = true
 		errs[0].Message = "This field must be greater than 6 characters"
 		valid = false
-	}
-	if len(title) > 255 {
+	} else if len(title) > 255 {
 		errs[0].Bool = true
 		errs[0].Message = "This field must have less than 255 characters"
 		valid = false
@@ -118,13 +111,11 @@ func ValidateNewPost(title string, text string) (errs [3]consts.FormInputError, 
 		errs[1].Bool = true
 		errs[1].Message = "This field is required"
 		valid = false
-	}
-	if len(text) < 5 {
+	} else if len(text) < 5 {
 		errs[1].Bool = true
 		errs[1].Message = "This field must be greater than 6 characters"
 		valid = false
-	}
-	if len(title) > 1275 {
+	} else if len(title) > 1275 {
 		errs[1].Bool = true
 		errs[1].Message = "This field must have less than 1275 characters"
 		valid = false

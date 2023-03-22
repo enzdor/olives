@@ -18,18 +18,6 @@ func NewError(w http.ResponseWriter, status int, msg string) {
 	return
 }
 
-func NewErrorBody(w http.ResponseWriter, status int, body any) {
-	w.WriteHeader(status)
-	jsonBytes, err := json.Marshal(body)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(consts.JsonParseError))
-		return
-	}
-	w.Write(jsonBytes)
-	return
-}
-
 func NewResponse(w http.ResponseWriter, status int, body any) {
 	w.WriteHeader(status)
 	jsonBytes, err := json.Marshal(body)

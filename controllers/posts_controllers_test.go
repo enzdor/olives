@@ -139,7 +139,8 @@ func TestCreatePost(t *testing.T) {
 
 	firstExpectedRes := consts.ResCreatedPost{
 		Post:   newPost,
-		Errors: consts.EmptyCreatePostErrors,
+		FormErrors: consts.EmptyCreatePostErrors,
+		Error: "",
 	}
 
 	newPost2 := sqlc.Post{
@@ -156,7 +157,7 @@ func TestCreatePost(t *testing.T) {
 	}
 	secondExpectedRes := consts.ResCreatedPost{
 		Post:   newPost2,
-		Errors: [3]consts.FormInputError{
+		FormErrors: [3]consts.FormInputError{
 			{
 				Bool: true,
 				Message: "This field is required",
@@ -173,6 +174,7 @@ func TestCreatePost(t *testing.T) {
 				Field: "image",
 			},
 		},
+		Error: "",
 	}
 
 	pr, pw := io.Pipe()
@@ -203,7 +205,8 @@ func TestCreatePost(t *testing.T) {
 	}
 	thirdExpectedRes := consts.ResCreatedPost{
 		Post:   thirdPost,
-		Errors: consts.EmptyCreatePostErrors,
+		FormErrors: consts.EmptyCreatePostErrors,
+		Error: "",
 	}
 
 	fourthPost := newPost2
@@ -219,7 +222,8 @@ func TestCreatePost(t *testing.T) {
 	}
 	fourthExpectedRes := consts.ResCreatedPost{
 		Post:   fourthPost,
-		Errors: fourthErrs,
+		FormErrors: fourthErrs,
+		Error: "",
 	}
 
 	fifthPost := newPost2
@@ -231,7 +235,8 @@ func TestCreatePost(t *testing.T) {
 	fifthReq, err := NewPostRequestPost(fifthPost, "/posts")
 	fifthExpectedRes := consts.ResCreatedPost{
 		Post:   fifthPost,
-		Errors: fifthErrs,
+		FormErrors: fifthErrs,
+		Error: "",
 	}
 
 	sixthPost := newPost
@@ -271,7 +276,8 @@ func TestCreatePost(t *testing.T) {
 	sixthReq.Header.Set("Content-Type", form6.FormDataContentType())
 	sixthExpectedRes := consts.ResCreatedPost{
 		Post: sixthPost,
-		Errors: sixthErrs,
+		FormErrors: sixthErrs,
+		Error: "",
 	}
 
 	pr7, pw7 := io.Pipe()
@@ -291,7 +297,8 @@ func TestCreatePost(t *testing.T) {
 	seventhReq.Header.Set("Content-Type", form7.FormDataContentType())
 	seventhExpectedRes := consts.ResCreatedPost{
 		Post: seventhPost,
-		Errors: seventhErrs,
+		FormErrors: seventhErrs,
+		Error: "",
 	}
 
 	testCases := []PostTestCase{

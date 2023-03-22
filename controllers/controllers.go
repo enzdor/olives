@@ -134,7 +134,7 @@ func TestPost(t *testing.T, testCases []PostTestCase, controller func(w http.Res
 
 					res := consts.ResCreatedPost{
 						Post:   resPost,
-						Errors: consts.EmptyCreatePostErrors,
+						FormErrors: consts.EmptyCreatePostErrors,
 					}
 
 					resJson, err := json.Marshal(res)

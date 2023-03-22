@@ -52,7 +52,7 @@ func (h *Handler) GetSubolivePosts(w http.ResponseWriter, r *http.Request) {
 		utils.NewError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	
+
 	if v.Id > 5 {
 		utils.NewError(w, http.StatusNotFound, consts.SuboliveNonExistant.Error())
 		return
@@ -73,7 +73,7 @@ func (h *Handler) GetSubolivePosts(w http.ResponseWriter, r *http.Request) {
 	offset := page * consts.ITEMS_PER_PAGE
 
 	posts, err := h.q.GetSubolivePosts(context.Background(), sqlc.GetSubolivePostsParams{
-		Offset: int32(offset),
+		Offset:     int32(offset),
 		SuboliveID: int32(v.Id),
 	})
 	if err != nil {
@@ -95,9 +95,14 @@ func (h *Handler) GetSubolivePosts(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+// FIXME: use consts.ResCreatedPost for the ALL of the responses including errors
 func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		utils.NewError(w, http.StatusMethodNotAllowed, consts.UnsupportedMethod.Error())
+		utils.NewResponse(w, http.StatusMethodNotAllowed, consts.ResCreatedPost{
+			Post:       consts.EmptyPost,
+			FormErrors: consts.EmptyCreatePostErrors,
+			Error:      consts.UnsupportedMethod.Error(),
+		})
 		return
 	}
 
@@ -111,13 +116,21 @@ func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	case "multipart/form-data":
 		withImage = true
 	default:
-		utils.NewError(w, http.StatusBadRequest, "could not find Content-Type")
+		utils.NewResponse(w, http.StatusBadRequest, consts.ResCreatedPost{
+			Post:       consts.EmptyPost,
+			FormErrors: consts.EmptyCreatePostErrors,
+			Error:      "Counld not find Content-Type",
+		})
 		return
 	}
 
 	if withImage {
 		if err := r.ParseMultipartForm(32 << 20); err != nil {
-			utils.NewError(w, http.StatusNotFound, "could not parse form")
+			utils.NewResponse(w, http.StatusInternalServerError, consts.ResCreatedPost{
+				Post:       consts.EmptyPost,
+				FormErrors: consts.EmptyCreatePostErrors,
+				Error:      "Could not parse form",
+			})
 			return
 		}
 	}
@@ -125,39 +138,52 @@ func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	text := strings.TrimSpace(r.FormValue("text"))
 	userId, err := strconv.Atoi(r.FormValue("user_id"))
 	if err != nil {
-		utils.NewError(w, http.StatusInternalServerError, err.Error())
+		utils.NewResponse(w, http.StatusInternalServerError, consts.ResCreatedPost{
+			Post:       consts.EmptyPost,
+			FormErrors: consts.EmptyCreatePostErrors,
+			Error:      err.Error(),
+		})
 		return
 	}
 	suboliveId, err := strconv.Atoi(r.FormValue("subolive_id"))
 	if err != nil {
-		utils.NewError(w, http.StatusInternalServerError, err.Error())
+		utils.NewResponse(w, http.StatusInternalServerError, consts.ResCreatedPost{
+			Post:       consts.EmptyPost,
+			FormErrors: consts.EmptyCreatePostErrors,
+			Error:      err.Error(),
+		})
 		return
 	}
 
 	if withImage {
 		image, header, err := r.FormFile("image")
 		if err != nil {
-			utils.NewError(w, http.StatusInternalServerError, err.Error())
+			utils.NewResponse(w, http.StatusInternalServerError, consts.ResCreatedPost{
+				Post:       consts.EmptyPost,
+				FormErrors: consts.EmptyCreatePostErrors,
+				Error:      err.Error(),
+			})
 			return
 		}
 		defer image.Close()
 
-		errs, valid, imgPath:= utils.ValidateNewPostWithImage(title, text, image, header)
+		errs, valid, imgPath := utils.ValidateNewPostWithImage(title, text, image, header)
 		if !valid {
-			utils.NewErrorBody(w, http.StatusUnprocessableEntity, consts.ResCreatedPost{
+			utils.NewResponse(w, http.StatusUnprocessableEntity, consts.ResCreatedPost{
 				Post: sqlc.Post{
-					PostID: 0,
-					Title: title,
-					Text: text,
-					CreatedAt: time.Now(),
-					UserID: int32(userId),
+					PostID:     0,
+					Title:      title,
+					Text:       text,
+					CreatedAt:  time.Now(),
+					UserID:     int32(userId),
 					SuboliveID: int32(suboliveId),
 					ImageID: sql.NullInt32{
 						Int32: 0,
 						Valid: false,
 					},
 				},
-				Errors: errs,
+				FormErrors: errs,
+				Error:      "",
 			})
 			return
 		}
@@ -165,20 +191,28 @@ func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
 
 		_, err = h.q.CreateImage(context.Background(), imgPath)
 		if err != nil {
-			utils.NewError(w, http.StatusInternalServerError, err.Error())
+			utils.NewResponse(w, http.StatusInternalServerError, consts.ResCreatedPost{
+				Post:       consts.EmptyPost,
+				FormErrors: consts.EmptyCreatePostErrors,
+				Error:      err.Error(),
+			})
 			return
 		}
 
 		img, err := h.q.GetNewestImage(context.Background())
 		if err != nil {
-			utils.NewError(w, http.StatusInternalServerError, err.Error())
+			utils.NewResponse(w, http.StatusInternalServerError, consts.ResCreatedPost{
+				Post:       consts.EmptyPost,
+				FormErrors: consts.EmptyCreatePostErrors,
+				Error:      err.Error(),
+			})
 			return
 		}
 
 		_, err = h.q.CreatePost(context.Background(), sqlc.CreatePostParams{
-			Title: title,
-			Text: text,
-			UserID: int32(userId),
+			Title:      title,
+			Text:       text,
+			UserID:     int32(userId),
 			SuboliveID: int32(suboliveId),
 			ImageID: sql.NullInt32{
 				Int32: img.ImageID,
@@ -189,29 +223,30 @@ func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	} else {
 		errs, valid := utils.ValidateNewPost(title, text)
 		if !valid {
-			utils.NewErrorBody(w, http.StatusUnprocessableEntity, consts.ResCreatedPost{
+			utils.NewResponse(w, http.StatusUnprocessableEntity, consts.ResCreatedPost{
 				Post: sqlc.Post{
-					PostID: 0,
-					Title: title,
-					Text: text,
-					CreatedAt: time.Now(),
-					UserID: int32(userId),
+					PostID:     0,
+					Title:      title,
+					Text:       text,
+					CreatedAt:  time.Now(),
+					UserID:     int32(userId),
 					SuboliveID: int32(suboliveId),
 					ImageID: sql.NullInt32{
 						Int32: 0,
 						Valid: false,
 					},
 				},
-				Errors: errs,
+				FormErrors: errs,
+				Error:      "",
 			})
 			return
 		}
 		errors = errs
 
 		_, err = h.q.CreatePost(context.Background(), sqlc.CreatePostParams{
-			Title: title,
-			Text: text,
-			UserID: int32(userId),
+			Title:      title,
+			Text:       text,
+			UserID:     int32(userId),
 			SuboliveID: int32(suboliveId),
 			ImageID: sql.NullInt32{
 				Int32: 0,
@@ -222,40 +257,30 @@ func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
 
 	post, err := h.q.GetNewestPost(context.Background())
 	if err != nil {
-		utils.NewError(w, http.StatusInternalServerError, err.Error())
+		utils.NewResponse(w, http.StatusInternalServerError, consts.ResCreatedPost{
+			Post:       consts.EmptyPost,
+			FormErrors: consts.EmptyCreatePostErrors,
+			Error:      err.Error(),
+		})
 		return
 	}
 
 	resPost := sqlc.Post{
-		PostID: post.PostID,
-		Title: post.Title,
-		Text: post.Text,
-		CreatedAt: post.CreatedAt,
-		UserID: post.UserID,
+		PostID:     post.PostID,
+		Title:      post.Title,
+		Text:       post.Text,
+		CreatedAt:  post.CreatedAt,
+		UserID:     post.UserID,
 		SuboliveID: post.SuboliveID,
-		ImageID: post.ImageID,
+		ImageID:    post.ImageID,
 	}
 
 	res := consts.ResCreatedPost{
-		Post: resPost,
-		Errors: errors,
+		Post:       resPost,
+		FormErrors: errors,
+		Error:      "",
 	}
 
 	utils.NewResponse(w, http.StatusCreated, res)
 	return
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

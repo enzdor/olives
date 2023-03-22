@@ -119,6 +119,15 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (sql.Res
 	)
 }
 
+const deleteComment = `-- name: DeleteComment :execresult
+DELETE FROM comments
+WHERE post_id = ?
+`
+
+func (q *Queries) DeleteComment(ctx context.Context, postID int32) (sql.Result, error) {
+	return q.db.ExecContext(ctx, deleteComment, postID)
+}
+
 const deletePost = `-- name: DeletePost :execresult
 DELETE FROM posts
 WHERE post_id = ?

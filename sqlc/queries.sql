@@ -95,6 +95,10 @@ SELECT COUNT(*) FROM posts;
 INSERT INTO posts(text, created_at, user_id, image_id, post_id)
 VALUES (?, ?, ?, ?, ?);
 
+-- name: DeleteComment :execresult
+DELETE FROM comments
+WHERE post_id = ?;
+
 -- name: CountComments :one
 SELECT COUNT(*) FROM comments
 WHERE post_id = ?;

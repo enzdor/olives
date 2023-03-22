@@ -49,7 +49,11 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		utils.NewError(w, http.StatusMethodNotAllowed, consts.UnsupportedMethod.Error())
+		utils.NewResponse(w, http.StatusMethodNotAllowed, consts.ResCreateUser{
+			User: consts.EmptyUser,
+			FormErrors: consts.EmptyCreateUserErrors,
+			Error: consts.UnsupportedMethod.Error(),
+		})
 		return
 	}
 
@@ -58,15 +62,16 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	password := strings.TrimSpace(r.FormValue("password"))
 	errs, valid := utils.ValidateNewUser(email, username, password)
 	if !valid {
-		utils.NewErrorBody(w, http.StatusUnprocessableEntity, consts.ResCreateUser{
-			User: sqlc.User {
-				UserID: 0,
-				Email: email,
-				Username: username,
-				Password: "",
-				Admin: false,
-			},
-			Errors: errs,
+		utils.NewResponse(w, http.StatusUnprocessableEntity, consts.ResCreateUser{
+                       User: sqlc.User {
+                               UserID: 0,
+                               Email: email,
+                               Username: username,
+                               Password: "",
+                               Admin: false,
+                       },
+			FormErrors: errs,
+			Error: "",
 		})
 		return
 	}
@@ -77,18 +82,28 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		Admin: false,
 	})
 	if err != nil {
-		utils.NewError(w, http.StatusInternalServerError, err.Error())
+		utils.NewResponse(w, http.StatusInternalServerError, consts.ResCreateUser{
+			User: consts.EmptyUser,
+			FormErrors: consts.EmptyCreateUserErrors,
+			Error: err.Error(),
+		})
 		return
 	}
 
 	user, err := h.q.GetUserByEmail(context.Background(), r.FormValue("email"))
 	if err != nil {
-		utils.NewError(w, http.StatusInternalServerError, err.Error())
+		utils.NewResponse(w, http.StatusInternalServerError, consts.ResCreateUser{
+			User: consts.EmptyUser,
+			FormErrors: consts.EmptyCreateUserErrors,
+			Error: err.Error(),
+		})
+		return
 	}
 
 	utils.NewResponse(w, http.StatusCreated, consts.ResCreateUser{
 		User: user,
-		Errors: consts.EmptyCreateUserErrors,
+		FormErrors: consts.EmptyCreateUserErrors,
+		Error: "",
 	})
 	return
 }

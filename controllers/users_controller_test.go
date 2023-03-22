@@ -65,7 +65,8 @@ func TestCreateUser(t *testing.T) {
 	newUser.UserID = newestUser.UserID + 1
 	firstExpectedRes := consts.ResCreateUser {
 		User: newUser,
-		Errors: consts.EmptyCreateUserErrors,
+		FormErrors: consts.EmptyCreateUserErrors,
+		Error: "",
 	}
 	firstReq, err := NewPostRequestUser(newUser, "/users")
 	if err != nil {
@@ -84,7 +85,8 @@ func TestCreateUser(t *testing.T) {
 			Password: "",
 			Admin: false,
 		},
-		Errors: secErrs,
+		FormErrors: secErrs,
+		Error: "",
 	}
 	secondReq, err := NewPostRequestUser(secondUser, "/users")
 	if err != nil {
@@ -103,7 +105,8 @@ func TestCreateUser(t *testing.T) {
 			Password: "",
 			Admin: false,
 		},
-		Errors: thirdErrs,
+		FormErrors: thirdErrs,
+		Error: "",
 	}
 	thirdReq, err := NewPostRequestUser(thirdUser, "/users")
 	if err != nil {
@@ -123,7 +126,8 @@ func TestCreateUser(t *testing.T) {
 			Password: "",
 			Admin: false,
 		},
-		Errors: fourthErrs,
+		FormErrors: fourthErrs,
+		Error: "",
 	}
 	fourthReq, err := NewPostRequestUser(fourthUser, "/users")
 	if err != nil {

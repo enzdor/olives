@@ -376,3 +376,41 @@ func TestCreatePost(t *testing.T) {
 
 	TestPost(t, testCases, Th.CreatePost)
 }
+
+func TestDeletePost(t *testing.T) {
+	newestPost, err := Th.q.GetNewestPost(context.Background())
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+
+	firstReq := httptest.NewRequest(http.MethodDelete, "/posts/" + strconv.Itoa(int(newestPost.PostID)), nil)
+	secondReq := httptest.NewRequest(http.MethodDelete, "/posts/" + strconv.Itoa(1000000), nil)
+	thirdReq := httptest.NewRequest(http.MethodDelete, "/posts/" + strconv.Itoa(int(newestPost.PostID - 1)), nil)
+
+	testCases := []GetTestCase {
+		{
+			Name: "successful delete of post with no image",
+			Req: firstReq,
+			ExpectedRes: "",
+			ExpectedCode: http.StatusOK,
+		},
+		{
+			Name: "failed request for non existing post",
+			Req: secondReq,
+			ExpectedRes: consts.ErrorMessage{
+				Msg: sql.ErrNoRows.Error(),
+			},
+			ExpectedCode: http.StatusNotFound,
+		},
+		{
+			Name: "successful delete of post with image",
+			Req: thirdReq,
+			ExpectedRes: "",
+			ExpectedCode: http.StatusOK,
+		},
+	}
+
+	TestGet(t, testCases, Th.DeletePost)
+}
+

@@ -160,7 +160,7 @@ func DownloadImage(image multipart.File, header *multipart.FileHeader) (string, 
 	if _, err := io.Copy(buf, image); err != nil {
 		return "", err
 	}
-	path := fmt.Sprintf("%d%s", time.Now().Unix(), header.Filename)
+	path := fmt.Sprintf("../view/images/%d%s", time.Now().Unix(), header.Filename)
 	
 	if err := os.WriteFile(path, buf.Bytes(), 0666); err != nil {
 		return "", err

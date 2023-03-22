@@ -27,7 +27,7 @@ func main() {
 	http.HandleFunc("/users/", h.GetOrDeleteUser)
 	http.HandleFunc("/users", h.CreateUser)
 
-	http.HandleFunc("/posts/", h.GetPost)
+	http.HandleFunc("/posts/", h.GetOrDeletePost)
 	http.HandleFunc("/posts/subolive/", h.GetSubolivePosts)
 
 	log.Print("Listiening on port :8080")

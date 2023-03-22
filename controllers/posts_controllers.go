@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -13,12 +14,22 @@ import (
 	"github.com/jobutterfly/olives/utils"
 )
 
-func (h *Handler) GetPost(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		utils.NewError(w, http.StatusMethodNotAllowed, consts.UnsupportedMethod.Error())
+
+func (h *Handler) GetOrDeletePost(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "DELETE":
+		h.DeletePost(w, r)
 		return
+	case "GET":
+		h.GetPost(w, r)
+		return
+	default:
+		utils.NewError(w, http.StatusMethodNotAllowed, consts.UnsupportedMethod.Error())
 	}
 
+}
+
+func (h *Handler) GetPost(w http.ResponseWriter, r *http.Request) {
 	v, err := utils.GetPathValues(strings.Split(r.URL.Path, "/"), 0)
 	if err != nil {
 		utils.NewError(w, http.StatusBadRequest, err.Error())
@@ -284,3 +295,43 @@ func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	utils.NewResponse(w, http.StatusCreated, res)
 	return
 }
+
+func (h *Handler) DeletePost(w http.ResponseWriter, r *http.Request) {
+	v, err := utils.GetPathValues(strings.Split(r.URL.Path, "/"), 0)
+	if err != nil {
+		utils.NewError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	post, err := h.q.GetPost(context.Background(), int32(v.Id))
+	if post.FilePath.Valid {
+		if err := os.Remove(post.FilePath.String); err != nil {
+			utils.NewError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+	}
+
+	exc, err := h.q.DeletePost(context.Background(), int32(v.Id))
+	if err != nil {
+		if err == sql.ErrNoRows {
+			utils.NewError(w, http.StatusNotFound, err.Error())
+			return
+		}
+
+		utils.NewError(w, http.StatusInternalServerError, "error when deleting user")
+		return
+	}
+
+	rows, err := exc.RowsAffected()
+	if err != nil {
+		utils.NewError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	if rows < 1 {
+		utils.NewError(w, http.StatusNotFound, sql.ErrNoRows.Error())
+		return
+	}
+
+	utils.NewResponse(w, http.StatusOK, "")
+}
+

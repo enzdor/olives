@@ -4,6 +4,7 @@ A Reddit clone. The back-end will be written in go while the front-end will be m
 
 ## TODO
 
+- create middleware for endpoints that should only be accessed by admins
 - use sessions. create methods:
 	- new session
 	- delete session
@@ -17,6 +18,7 @@ A Reddit clone. The back-end will be written in go while the front-end will be m
 	- bcrypt
 - mariadb
 - react
+	- Nextjs
 	- TypeScript
 	- Tailwind
 
@@ -34,9 +36,9 @@ A Reddit clone. The back-end will be written in go while the front-end will be m
 
 - /getSubolivePosts/:id?page=x     GET       done            to get all the posts in a subolive to show in the subolive page (create version of this without including comments for performance or just be lazy and keep this one)
 - /getPost/:id                     GET       done            to see the info of a post
-- /deletePost/:id                  DELETE                    to delete a post (for admins)
+- /deletePost/:id                  DELETE    done            to delete a post (for admins)
 - /createPost                      POST      done            to create a new post
-- /createComment/:postId           POST                      to create a comment
+- /createComment/:postId           POST      next            to create a comment
 - /deleteCooment/:postId           DELETE                    to delete a comment (for admins)
 - /getUser/:userId                 GET       done            to get user info
 - /createUser                      POST      done            to create a new user

@@ -138,9 +138,9 @@ func TestCreatePost(t *testing.T) {
 	newPost.PostID = newestPost.PostID + 1
 
 	firstExpectedRes := consts.ResCreatedPost{
-		Post:   newPost,
+		Post:       newPost,
 		FormErrors: consts.EmptyCreatePostErrors,
-		Error: "",
+		Error:      "",
 	}
 
 	newPost2 := sqlc.Post{
@@ -156,22 +156,22 @@ func TestCreatePost(t *testing.T) {
 		},
 	}
 	secondExpectedRes := consts.ResCreatedPost{
-		Post:   newPost2,
+		Post: newPost2,
 		FormErrors: [3]consts.FormInputError{
 			{
-				Bool: true,
+				Bool:    true,
 				Message: "This field is required",
-				Field: "title",
+				Field:   "title",
 			},
 			{
-				Bool: true,
+				Bool:    true,
 				Message: "This field is required",
-				Field: "text",
+				Field:   "text",
 			},
 			{
-				Bool: true,
+				Bool:    true,
 				Message: "File size greater than 512 kilobytes. Choose a smaller file.",
-				Field: "image",
+				Field:   "image",
 			},
 		},
 		Error: "",
@@ -204,9 +204,9 @@ func TestCreatePost(t *testing.T) {
 		return
 	}
 	thirdExpectedRes := consts.ResCreatedPost{
-		Post:   thirdPost,
+		Post:       thirdPost,
 		FormErrors: consts.EmptyCreatePostErrors,
-		Error: "",
+		Error:      "",
 	}
 
 	fourthPost := newPost2
@@ -221,9 +221,9 @@ func TestCreatePost(t *testing.T) {
 		return
 	}
 	fourthExpectedRes := consts.ResCreatedPost{
-		Post:   fourthPost,
+		Post:       fourthPost,
 		FormErrors: fourthErrs,
-		Error: "",
+		Error:      "",
 	}
 
 	fifthPost := newPost2
@@ -234,9 +234,9 @@ func TestCreatePost(t *testing.T) {
 	fifthErrs[0].Message = "This field must have less than 255 characters"
 	fifthReq, err := NewPostRequestPost(fifthPost, "/posts")
 	fifthExpectedRes := consts.ResCreatedPost{
-		Post:   fifthPost,
+		Post:       fifthPost,
 		FormErrors: fifthErrs,
-		Error: "",
+		Error:      "",
 	}
 
 	sixthPost := newPost
@@ -249,19 +249,19 @@ func TestCreatePost(t *testing.T) {
 	}
 	sixthErrs := [3]consts.FormInputError{
 		{
-			Bool: true,
+			Bool:    true,
 			Message: "This field must be greater than 6 characters",
-			Field: "title",
+			Field:   "title",
 		},
 		{
-			Bool: true,
+			Bool:    true,
 			Message: "This field is required",
-			Field: "text",
+			Field:   "text",
 		},
 		{
-			Bool: false,
+			Bool:    false,
 			Message: "",
-			Field: "image",
+			Field:   "image",
 		},
 	}
 	pr6, pw6 := io.Pipe()
@@ -275,9 +275,9 @@ func TestCreatePost(t *testing.T) {
 	}
 	sixthReq.Header.Set("Content-Type", form6.FormDataContentType())
 	sixthExpectedRes := consts.ResCreatedPost{
-		Post: sixthPost,
+		Post:       sixthPost,
 		FormErrors: sixthErrs,
-		Error: "",
+		Error:      "",
 	}
 
 	pr7, pw7 := io.Pipe()
@@ -296,9 +296,9 @@ func TestCreatePost(t *testing.T) {
 	seventhErrs[2].Message = "File type should be jpeg or png"
 	seventhReq.Header.Set("Content-Type", form7.FormDataContentType())
 	seventhExpectedRes := consts.ResCreatedPost{
-		Post: seventhPost,
+		Post:       seventhPost,
 		FormErrors: seventhErrs,
-		Error: "",
+		Error:      "",
 	}
 
 	testCases := []PostTestCase{
@@ -384,33 +384,32 @@ func TestDeletePost(t *testing.T) {
 		return
 	}
 
-	firstReq := httptest.NewRequest(http.MethodDelete, "/posts/" + strconv.Itoa(int(newestPost.PostID)), nil)
-	secondReq := httptest.NewRequest(http.MethodDelete, "/posts/" + strconv.Itoa(1000000), nil)
-	thirdReq := httptest.NewRequest(http.MethodDelete, "/posts/" + strconv.Itoa(int(newestPost.PostID - 1)), nil)
+	firstReq := httptest.NewRequest(http.MethodDelete, "/posts/"+strconv.Itoa(int(newestPost.PostID)), nil)
+	secondReq := httptest.NewRequest(http.MethodDelete, "/posts/"+strconv.Itoa(1000000), nil)
+	thirdReq := httptest.NewRequest(http.MethodDelete, "/posts/"+strconv.Itoa(int(newestPost.PostID-1)), nil)
 
-	testCases := []GetTestCase {
+	testCases := []GetTestCase{
 		{
-			Name: "successful delete of post with no image",
-			Req: firstReq,
-			ExpectedRes: "",
+			Name:         "successful delete of post with no image",
+			Req:          firstReq,
+			ExpectedRes:  "",
 			ExpectedCode: http.StatusOK,
 		},
 		{
 			Name: "failed request for non existing post",
-			Req: secondReq,
+			Req:  secondReq,
 			ExpectedRes: consts.ErrorMessage{
 				Msg: sql.ErrNoRows.Error(),
 			},
 			ExpectedCode: http.StatusNotFound,
 		},
 		{
-			Name: "successful delete of post with image",
-			Req: thirdReq,
-			ExpectedRes: "",
+			Name:         "successful delete of post with image",
+			Req:          thirdReq,
+			ExpectedRes:  "",
 			ExpectedCode: http.StatusOK,
 		},
 	}
 
 	TestGet(t, testCases, Th.DeletePost)
 }
-

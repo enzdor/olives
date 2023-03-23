@@ -146,6 +146,27 @@ func (q *Queries) DeleteUser(ctx context.Context, userID int32) (sql.Result, err
 	return q.db.ExecContext(ctx, deleteUser, userID)
 }
 
+const getNewestComment = `-- name: GetNewestComment :one
+SELECT comment_id, text, created_at, user_id, image_id, post_id FROM comments
+WHERE comment_id = (
+	SELECT MAX(comment_id) FROM comments
+)
+`
+
+func (q *Queries) GetNewestComment(ctx context.Context) (Comment, error) {
+	row := q.db.QueryRowContext(ctx, getNewestComment)
+	var i Comment
+	err := row.Scan(
+		&i.CommentID,
+		&i.Text,
+		&i.CreatedAt,
+		&i.UserID,
+		&i.ImageID,
+		&i.PostID,
+	)
+	return i, err
+}
+
 const getNewestImage = `-- name: GetNewestImage :one
 SELECT image_id, file_path FROM images
 WHERE image_id = (

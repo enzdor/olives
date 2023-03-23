@@ -14,7 +14,6 @@ import (
 	"github.com/jobutterfly/olives/utils"
 )
 
-
 func (h *Handler) GetOrDeletePost(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "DELETE":
@@ -106,7 +105,6 @@ func (h *Handler) GetSubolivePosts(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-// FIXME: use consts.ResCreatedPost for the ALL of the responses including errors
 func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		utils.NewResponse(w, http.StatusMethodNotAllowed, consts.ResCreatedPost{
@@ -334,4 +332,3 @@ func (h *Handler) DeletePost(w http.ResponseWriter, r *http.Request) {
 
 	utils.NewResponse(w, http.StatusOK, "")
 }
-

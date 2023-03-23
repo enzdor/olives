@@ -103,6 +103,12 @@ WHERE post_id = ?;
 SELECT COUNT(*) FROM comments
 WHERE post_id = ?;
 
+-- name: GetNewestComment :one
+SELECT * FROM comments
+WHERE comment_id = (
+	SELECT MAX(comment_id) FROM comments
+);
+
 -- name: GetUser :one
 SELECT * FROM users
 WHERE user_id = ?

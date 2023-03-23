@@ -29,4 +29,3 @@ func NewResponse(w http.ResponseWriter, status int, body any) {
 	w.Write(jsonBytes)
 	return
 }
-

@@ -133,7 +133,7 @@ func TestPost(t *testing.T, testCases []PostTestCase, controller func(w http.Res
 					}
 
 					res := consts.ResCreatedPost{
-						Post:   resPost,
+						Post:       resPost,
 						FormErrors: consts.EmptyCreatePostErrors,
 					}
 
@@ -209,9 +209,49 @@ func NewPostRequestPostImage(t *testing.T, writer *io.PipeWriter, form *multipar
 	form.Close()
 }
 
+func NewPostRequestCommentImage(t *testing.T, writer *io.PipeWriter, form *multipart.Writer, path string, comment sqlc.Comment) {
+	defer writer.Close()
+
+	if err := form.WriteField("text", comment.Text); err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+
+	if err := form.WriteField("user_id", strconv.Itoa(int(comment.UserID))); err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+
+	if err := form.WriteField("post_id", strconv.Itoa(int(comment.PostID))); err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+
+	file, err := os.Open("../" + path)
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+	defer file.Close()
+
+	w, err := form.CreateFormFile("image", path)
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+
+	_, err = io.Copy(w, file)
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+
+	form.Close()
+}
+
 func NewPostRequestUser(u sqlc.User, target string) (*http.Request, error) {
 	body := bytes.NewReader([]byte("username=" + u.Username + "&email=" + u.Email + "&password=" + u.Password))
-	req, err:= http.NewRequest(http.MethodPost, target, body)
+	req, err := http.NewRequest(http.MethodPost, target, body)
 	if err != nil {
 		return nil, err
 	}
@@ -222,7 +262,7 @@ func NewPostRequestUser(u sqlc.User, target string) (*http.Request, error) {
 
 func NewPostRequestPost(p sqlc.Post, target string) (*http.Request, error) {
 	body := bytes.NewReader([]byte("title=" + p.Title + "&text=" + p.Text + "&user_id=" + strconv.Itoa(int(p.UserID)) + "&subolive_id=" + strconv.Itoa(int(p.SuboliveID)) + "&image="))
-	req, err:= http.NewRequest(http.MethodPost, target, body)
+	req, err := http.NewRequest(http.MethodPost, target, body)
 	if err != nil {
 		return nil, err
 	}
@@ -231,8 +271,13 @@ func NewPostRequestPost(p sqlc.Post, target string) (*http.Request, error) {
 	return req, nil
 }
 
+func NewPostRequestComment(c sqlc.Comment, target string) (*http.Request, error) {
+	body := bytes.NewReader([]byte("text=" + c.Text + "&user_id=" + strconv.Itoa(int(c.UserID)) + "&post_id=" + strconv.Itoa(int(c.PostID)) + "&image="))
+	req, err := http.NewRequest(http.MethodPost, target, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-
-
-
-
+	return req, nil
+}

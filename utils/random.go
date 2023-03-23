@@ -31,18 +31,33 @@ func RandomUser() sqlc.User {
 		Email:    RandomString(5) + "@" + RandomString(6) + ".com",
 		Username: RandomString(10),
 		Password: RandomString(25),
-		Admin: false,
+		Admin:    false,
+	}
+}
+
+func RandomComment() sqlc.Comment {
+	rand.Seed(time.Now().Unix())
+	return sqlc.Comment{
+		CommentID: int32(rand.Intn(999)),
+		Text:      RandomString(1000),
+		CreatedAt: time.Now(),
+		UserID:    int32(rand.Intn(100)),
+		ImageID: sql.NullInt32{
+			Int32: int32(rand.Intn(12)),
+			Valid: true,
+		},
+		PostID: int32(rand.Intn(100)),
 	}
 }
 
 func RandomPost() sqlc.Post {
 	rand.Seed(time.Now().Unix())
 	return sqlc.Post{
-		PostID: int32(rand.Intn(100)),
-		Title: RandomString(100),
-		Text: RandomString(1000),
+		PostID:    int32(rand.Intn(100)),
+		Title:     RandomString(100),
+		Text:      RandomString(1000),
 		CreatedAt: time.Now(),
-		UserID: int32(rand.Intn(100)),
+		UserID:    int32(rand.Intn(100)),
 		ImageID: sql.NullInt32{
 			Int32: int32(rand.Intn(12)),
 			Valid: true,
@@ -50,4 +65,3 @@ func RandomPost() sqlc.Post {
 		SuboliveID: int32(rand.Intn(5)),
 	}
 }
-

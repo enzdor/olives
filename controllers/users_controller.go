@@ -50,9 +50,9 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		utils.NewResponse(w, http.StatusMethodNotAllowed, consts.ResCreateUser{
-			User: consts.EmptyUser,
+			User:       consts.EmptyUser,
 			FormErrors: consts.EmptyCreateUserErrors,
-			Error: consts.UnsupportedMethod.Error(),
+			Error:      consts.UnsupportedMethod.Error(),
 		})
 		return
 	}
@@ -63,29 +63,29 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	errs, valid := utils.ValidateNewUser(email, username, password)
 	if !valid {
 		utils.NewResponse(w, http.StatusUnprocessableEntity, consts.ResCreateUser{
-                       User: sqlc.User {
-                               UserID: 0,
-                               Email: email,
-                               Username: username,
-                               Password: "",
-                               Admin: false,
-                       },
+			User: sqlc.User{
+				UserID:   0,
+				Email:    email,
+				Username: username,
+				Password: "",
+				Admin:    false,
+			},
 			FormErrors: errs,
-			Error: "",
+			Error:      "",
 		})
 		return
 	}
 	_, err := h.q.CreateUser(context.Background(), sqlc.CreateUserParams{
-		Email: email,
+		Email:    email,
 		Username: username,
 		Password: password,
-		Admin: false,
+		Admin:    false,
 	})
 	if err != nil {
 		utils.NewResponse(w, http.StatusInternalServerError, consts.ResCreateUser{
-			User: consts.EmptyUser,
+			User:       consts.EmptyUser,
 			FormErrors: consts.EmptyCreateUserErrors,
-			Error: err.Error(),
+			Error:      err.Error(),
 		})
 		return
 	}
@@ -93,17 +93,17 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	user, err := h.q.GetUserByEmail(context.Background(), r.FormValue("email"))
 	if err != nil {
 		utils.NewResponse(w, http.StatusInternalServerError, consts.ResCreateUser{
-			User: consts.EmptyUser,
+			User:       consts.EmptyUser,
 			FormErrors: consts.EmptyCreateUserErrors,
-			Error: err.Error(),
+			Error:      err.Error(),
 		})
 		return
 	}
 
 	utils.NewResponse(w, http.StatusCreated, consts.ResCreateUser{
-		User: user,
+		User:       user,
 		FormErrors: consts.EmptyCreateUserErrors,
-		Error: "",
+		Error:      "",
 	})
 	return
 }
@@ -138,17 +138,3 @@ func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	utils.NewResponse(w, http.StatusOK, "")
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

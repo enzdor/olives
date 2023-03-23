@@ -34,17 +34,17 @@ func TestGetUser(t *testing.T) {
 			ExpectedCode: http.StatusOK,
 		},
 		{
-			Name:         "failed request for non existing user",
-			Req:          httptest.NewRequest(http.MethodGet, "/users/"+strconv.Itoa(1000000), nil),
-			ExpectedRes:  consts.ErrorMessage{
+			Name: "failed request for non existing user",
+			Req:  httptest.NewRequest(http.MethodGet, "/users/"+strconv.Itoa(1000000), nil),
+			ExpectedRes: consts.ErrorMessage{
 				Msg: sql.ErrNoRows.Error(),
 			},
 			ExpectedCode: http.StatusNotFound,
 		},
 		{
-			Name:         "failed request for wrong path",
-			Req:          httptest.NewRequest(http.MethodGet, "/users/banana", nil),
-			ExpectedRes:  consts.ErrorMessage{
+			Name: "failed request for wrong path",
+			Req:  httptest.NewRequest(http.MethodGet, "/users/banana", nil),
+			ExpectedRes: consts.ErrorMessage{
 				Msg: consts.PathNotAnInteger.Error(),
 			},
 			ExpectedCode: http.StatusBadRequest,
@@ -63,10 +63,10 @@ func TestCreateUser(t *testing.T) {
 
 	newUser := utils.RandomUser()
 	newUser.UserID = newestUser.UserID + 1
-	firstExpectedRes := consts.ResCreateUser {
-		User: newUser,
+	firstExpectedRes := consts.ResCreateUser{
+		User:       newUser,
 		FormErrors: consts.EmptyCreateUserErrors,
-		Error: "",
+		Error:      "",
 	}
 	firstReq, err := NewPostRequestUser(newUser, "/users")
 	if err != nil {
@@ -77,16 +77,16 @@ func TestCreateUser(t *testing.T) {
 	secondUser := newUser
 	secondUser.Email = "notanemail"
 	secErrs, _ := utils.ValidateNewUser(secondUser.Email, secondUser.Username, secondUser.Password)
-	secondExpectedRes := consts.ResCreateUser {
+	secondExpectedRes := consts.ResCreateUser{
 		User: sqlc.User{
-			UserID: 0,
-			Email: secondUser.Email,
+			UserID:   0,
+			Email:    secondUser.Email,
 			Username: secondUser.Username,
 			Password: "",
-			Admin: false,
+			Admin:    false,
 		},
 		FormErrors: secErrs,
-		Error: "",
+		Error:      "",
 	}
 	secondReq, err := NewPostRequestUser(secondUser, "/users")
 	if err != nil {
@@ -97,16 +97,16 @@ func TestCreateUser(t *testing.T) {
 	thirdUser := newUser
 	thirdUser.Username = "shor"
 	thirdErrs, _ := utils.ValidateNewUser(thirdUser.Email, thirdUser.Username, thirdUser.Password)
-	thirdExpectedRes := consts.ResCreateUser {
+	thirdExpectedRes := consts.ResCreateUser{
 		User: sqlc.User{
-			UserID: 0,
-			Email: thirdUser.Email,
+			UserID:   0,
+			Email:    thirdUser.Email,
 			Username: thirdUser.Username,
 			Password: "",
-			Admin: false,
+			Admin:    false,
 		},
 		FormErrors: thirdErrs,
-		Error: "",
+		Error:      "",
 	}
 	thirdReq, err := NewPostRequestUser(thirdUser, "/users")
 	if err != nil {
@@ -114,20 +114,19 @@ func TestCreateUser(t *testing.T) {
 		return
 	}
 
-
 	fourthUser := newUser
 	fourthUser.Password = "shor"
 	fourthErrs, _ := utils.ValidateNewUser(fourthUser.Email, fourthUser.Username, fourthUser.Password)
-	fourthExpectedRes := consts.ResCreateUser {
+	fourthExpectedRes := consts.ResCreateUser{
 		User: sqlc.User{
-			UserID: 0,
-			Email: fourthUser.Email,
+			UserID:   0,
+			Email:    fourthUser.Email,
 			Username: fourthUser.Username,
 			Password: "",
-			Admin: false,
+			Admin:    false,
 		},
 		FormErrors: fourthErrs,
-		Error: "",
+		Error:      "",
 	}
 	fourthReq, err := NewPostRequestUser(fourthUser, "/users")
 	if err != nil {
@@ -143,7 +142,7 @@ func TestCreateUser(t *testing.T) {
 			ExpectedCode: http.StatusCreated,
 			TestAfter: AfterRes{
 				Valid: true,
-				Type: "user",
+				Type:  "user",
 			},
 		},
 		{
@@ -153,7 +152,7 @@ func TestCreateUser(t *testing.T) {
 			ExpectedCode: http.StatusUnprocessableEntity,
 			TestAfter: AfterRes{
 				Valid: false,
-				Type: "",
+				Type:  "",
 			},
 		},
 		{
@@ -163,7 +162,7 @@ func TestCreateUser(t *testing.T) {
 			ExpectedCode: http.StatusUnprocessableEntity,
 			TestAfter: AfterRes{
 				Valid: false,
-				Type: "",
+				Type:  "",
 			},
 		},
 		{
@@ -173,7 +172,7 @@ func TestCreateUser(t *testing.T) {
 			ExpectedCode: http.StatusUnprocessableEntity,
 			TestAfter: AfterRes{
 				Valid: false,
-				Type: "",
+				Type:  "",
 			},
 		},
 	}
@@ -188,19 +187,19 @@ func TestDeleteUser(t *testing.T) {
 		return
 	}
 
-	firstReq := httptest.NewRequest(http.MethodDelete, "/users/" + strconv.Itoa(int(newestUser.UserID)), nil)
-	secondReq := httptest.NewRequest(http.MethodDelete, "/users/" + strconv.Itoa(1000000), nil)
+	firstReq := httptest.NewRequest(http.MethodDelete, "/users/"+strconv.Itoa(int(newestUser.UserID)), nil)
+	secondReq := httptest.NewRequest(http.MethodDelete, "/users/"+strconv.Itoa(1000000), nil)
 
-	testCases := []GetTestCase {
+	testCases := []GetTestCase{
 		{
-			Name: "successful delete of user",
-			Req: firstReq,
-			ExpectedRes: "",
+			Name:         "successful delete of user",
+			Req:          firstReq,
+			ExpectedRes:  "",
 			ExpectedCode: http.StatusOK,
 		},
 		{
 			Name: "failed request for non existing user",
-			Req: secondReq,
+			Req:  secondReq,
 			ExpectedRes: consts.ErrorMessage{
 				Msg: sql.ErrNoRows.Error(),
 			},
@@ -210,16 +209,3 @@ func TestDeleteUser(t *testing.T) {
 
 	TestGet(t, testCases, Th.DeleteUser)
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

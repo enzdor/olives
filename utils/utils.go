@@ -15,7 +15,6 @@ import (
 	"github.com/jobutterfly/olives/consts"
 )
 
-
 type PathInfo struct {
 	Id int
 }
@@ -27,14 +26,14 @@ func GetPathValues(ps []string, offset int) (PathInfo, error) {
 		Id: 0,
 	}
 
-	if len(ps) > 3 + offset {
-		if ps[3 + offset] != "" {
+	if len(ps) > 3+offset {
+		if ps[3+offset] != "" {
 			err := consts.PathNotFound
 			return r, err
 		}
 	}
 
-	id, err := strconv.Atoi(ps[2 + offset])
+	id, err := strconv.Atoi(ps[2+offset])
 	if err != nil {
 		err := consts.PathNotAnInteger
 		return r, err
@@ -90,7 +89,44 @@ func ValidateNewUser(email string, username string, password string) (errs [3]co
 	return errs, valid
 }
 
-func ValidateNewPost(title string, text string) (errs [3]consts.FormInputError, valid bool){
+func ValidateNewComment(text string) (errs [2]consts.FormInputError, valid bool) {
+	valid = true
+	errs = consts.EmptyCreateCommentErrors
+
+	if text == "" {
+		errs[1].Bool = true
+		errs[1].Message = "This field is required"
+		valid = false
+	} else if len(text) < 5 {
+		errs[1].Bool = true
+		errs[1].Message = "This field must be greater than 6 characters"
+		valid = false
+	} else if len(text) > 1275 {
+		errs[1].Bool = true
+		errs[1].Message = "This field must have less than 1275 characters"
+		valid = false
+	}
+
+	return errs, valid
+}
+
+func ValidateNewCommentWithImage(text string, image multipart.File, header *multipart.FileHeader) (errs [2]consts.FormInputError, valid bool, imgPath string) {
+	errs, valid = ValidateNewComment(text)
+	imgPath = ""
+
+	path, err := DownloadImage(image, header)
+	if err != nil {
+		errs[1].Bool = true
+		errs[1].Message = err.Error()
+		valid = false
+		return errs, valid, imgPath
+	}
+	imgPath = path
+
+	return errs, valid, imgPath
+}
+
+func ValidateNewPost(title string, text string) (errs [3]consts.FormInputError, valid bool) {
 	valid = true
 	errs = consts.EmptyCreatePostErrors
 
@@ -116,17 +152,16 @@ func ValidateNewPost(title string, text string) (errs [3]consts.FormInputError, 
 		errs[1].Bool = true
 		errs[1].Message = "This field must be greater than 6 characters"
 		valid = false
-	} else if len(title) > 1275 {
+	} else if len(text) > 1275 {
 		errs[1].Bool = true
 		errs[1].Message = "This field must have less than 1275 characters"
 		valid = false
 	}
 
-
 	return errs, valid
 }
 
-func ValidateNewPostWithImage(title string, text string, image multipart.File, header *multipart.FileHeader) (errs [3]consts.FormInputError, valid bool, imgPath string){
+func ValidateNewPostWithImage(title string, text string, image multipart.File, header *multipart.FileHeader) (errs [3]consts.FormInputError, valid bool, imgPath string) {
 	errs, valid = ValidateNewPost(title, text)
 	imgPath = ""
 
@@ -161,24 +196,10 @@ func DownloadImage(image multipart.File, header *multipart.FileHeader) (string, 
 		return "", err
 	}
 	path := fmt.Sprintf("../view/images/%d%s", time.Now().Unix(), header.Filename)
-	
+
 	if err := os.WriteFile(path, buf.Bytes(), 0666); err != nil {
 		return "", err
 	}
 
 	return path, nil
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

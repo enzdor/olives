@@ -2,8 +2,8 @@ package database
 
 import (
 	"database/sql"
-	"log"
 	"fmt"
+	"log"
 )
 
 func NewDB(user string, password string, name string) *sql.DB {
@@ -11,7 +11,7 @@ func NewDB(user string, password string, name string) *sql.DB {
 
 	db, err := sql.Open("mysql", cfg)
 	if err != nil {
-	    log.Fatal(err)
+		log.Fatal(err)
 	}
 
 	return db

@@ -27,3 +27,15 @@ var EmptyUser = sqlc.User{
 	Password: "",
 	Admin:    false,
 }
+
+var EmptyComment = sqlc.Comment{
+	CommentID: 0,
+	Text:      "",
+	CreatedAt: time.Now(),
+	UserID:    0,
+	ImageID: sql.NullInt32{
+		Int32: 0,
+		Valid: false,
+	},
+	PostID: 0,
+}

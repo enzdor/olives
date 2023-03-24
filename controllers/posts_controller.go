@@ -316,7 +316,7 @@ func (h *Handler) DeletePost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		utils.NewError(w, http.StatusInternalServerError, "error when deleting user")
+		utils.NewError(w, http.StatusInternalServerError, "error when deleting post")
 		return
 	}
 

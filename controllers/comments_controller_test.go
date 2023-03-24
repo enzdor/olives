@@ -6,6 +6,8 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"net/http/httptest"
+	"strconv"
 	"testing"
 	"time"
 
@@ -30,16 +32,16 @@ func TestCreateComment(t *testing.T) {
 	newComment.CommentID = newestComment.CommentID + 1
 
 	firstExpectedRes := consts.ResCreatedComment{
-		Comment:       newComment,
+		Comment:    newComment,
 		FormErrors: consts.EmptyCreateCommentErrors,
 		Error:      "",
 	}
 
 	newComment2 := sqlc.Comment{
-		CommentID:     0,
-		Text:       "",
-		CreatedAt:  time.Now(),
-		UserID:     20,
+		CommentID: 0,
+		Text:      "",
+		CreatedAt: time.Now(),
+		UserID:    20,
 		ImageID: sql.NullInt32{
 			Int32: 0,
 			Valid: false,
@@ -91,7 +93,7 @@ func TestCreateComment(t *testing.T) {
 		return
 	}
 	thirdExpectedRes := consts.ResCreatedComment{
-		Comment:       thirdComment,
+		Comment:    thirdComment,
 		FormErrors: consts.EmptyCreateCommentErrors,
 		Error:      "",
 	}
@@ -107,7 +109,7 @@ func TestCreateComment(t *testing.T) {
 		return
 	}
 	fourthExpectedRes := consts.ResCreatedComment{
-		Comment:       fourthComment,
+		Comment:    fourthComment,
 		FormErrors: fourthErrs,
 		Error:      "",
 	}
@@ -119,7 +121,7 @@ func TestCreateComment(t *testing.T) {
 	fifthErrs[0].Message = "This field must have less than 1275 characters"
 	fifthReq, err := NewPostRequestComment(fifthComment, "/comments")
 	fifthExpectedRes := consts.ResCreatedComment{
-		Comment:       fifthComment,
+		Comment:    fifthComment,
 		FormErrors: fifthErrs,
 		Error:      "",
 	}
@@ -154,7 +156,7 @@ func TestCreateComment(t *testing.T) {
 	}
 	sixthReq.Header.Set("Content-Type", form6.FormDataContentType())
 	sixthExpectedRes := consts.ResCreatedComment{
-		Comment:       sixthComment,
+		Comment:    sixthComment,
 		FormErrors: sixthErrs,
 		Error:      "",
 	}
@@ -177,7 +179,7 @@ func TestCreateComment(t *testing.T) {
 	seventhErrs[1].Message = "File type should be jpeg or png"
 	seventhReq.Header.Set("Content-Type", form7.FormDataContentType())
 	seventhExpectedRes := consts.ResCreatedComment{
-		Comment:       seventhComment,
+		Comment:    seventhComment,
 		FormErrors: seventhErrs,
 		Error:      "",
 	}
@@ -256,4 +258,46 @@ func TestCreateComment(t *testing.T) {
 	}
 
 	TestPost(t, testCases, Th.CreateComment)
+}
+
+func TestDeleteComment(t *testing.T) {
+	if err := Start(); err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+
+	newestComment, err := Th.q.GetNewestComment(context.Background())
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+
+	firstReq := httptest.NewRequest(http.MethodDelete, "/comments/"+strconv.Itoa(int(newestComment.CommentID)), nil)
+	secondReq := httptest.NewRequest(http.MethodDelete, "/comments/"+strconv.Itoa(1000000), nil)
+	thirdReq := httptest.NewRequest(http.MethodDelete, "/comments/"+strconv.Itoa(int(newestComment.CommentID-1)), nil)
+
+	testCases := []GetTestCase{
+		{
+			Name:         "successful delete of comment with no image",
+			Req:          firstReq,
+			ExpectedRes:  "",
+			ExpectedCode: http.StatusOK,
+		},
+		{
+			Name: "failed request for non existing comment",
+			Req:  secondReq,
+			ExpectedRes: consts.ErrorMessage{
+				Msg: sql.ErrNoRows.Error(),
+			},
+			ExpectedCode: http.StatusNotFound,
+		},
+		{
+			Name:         "successful delete of comment with image",
+			Req:          thirdReq,
+			ExpectedRes:  "",
+			ExpectedCode: http.StatusOK,
+		},
+	}
+
+	TestGet(t, testCases, Th.DeleteComment)
 }

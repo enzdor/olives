@@ -146,6 +146,53 @@ func (q *Queries) DeleteUser(ctx context.Context, userID int32) (sql.Result, err
 	return q.db.ExecContext(ctx, deleteUser, userID)
 }
 
+const getComment = `-- name: GetComment :one
+SELECT comments.comment_id, 
+	comments.text, 
+	comments.created_at, 
+	comments.post_id, 
+	comments.image_id, 
+	images.file_path, 
+	comments.user_id, 
+	users.username, 
+	users.email
+FROM comments
+LEFT JOIN posts ON comments.post_id = posts.post_id
+LEFT JOIN users ON comments.user_id = users.user_id
+LEFT JOIN images ON comments.image_id = images.image_id
+WHERE comment_id = ?
+LIMIT 1
+`
+
+type GetCommentRow struct {
+	CommentID int32          `json:"comment_id"`
+	Text      string         `json:"text"`
+	CreatedAt time.Time      `json:"created_at"`
+	PostID    int32          `json:"post_id"`
+	ImageID   sql.NullInt32  `json:"image_id"`
+	FilePath  sql.NullString `json:"file_path"`
+	UserID    int32          `json:"user_id"`
+	Username  sql.NullString `json:"username"`
+	Email     sql.NullString `json:"email"`
+}
+
+func (q *Queries) GetComment(ctx context.Context, commentID int32) (GetCommentRow, error) {
+	row := q.db.QueryRowContext(ctx, getComment, commentID)
+	var i GetCommentRow
+	err := row.Scan(
+		&i.CommentID,
+		&i.Text,
+		&i.CreatedAt,
+		&i.PostID,
+		&i.ImageID,
+		&i.FilePath,
+		&i.UserID,
+		&i.Username,
+		&i.Email,
+	)
+	return i, err
+}
+
 const getNewestComment = `-- name: GetNewestComment :one
 SELECT comment_id, text, created_at, user_id, image_id, post_id FROM comments
 WHERE comment_id = (
@@ -192,8 +239,7 @@ SELECT posts.post_id,
 	images.file_path, 
 	posts.user_id, 
 	users.username, 
-	users.email, 
-	users.password 
+	users.email
 FROM posts
 LEFT JOIN subolives ON posts.subolive_id = subolives.subolive_id
 LEFT JOIN users ON posts.user_id = users.user_id
@@ -214,7 +260,6 @@ type GetNewestPostRow struct {
 	UserID     int32          `json:"user_id"`
 	Username   sql.NullString `json:"username"`
 	Email      sql.NullString `json:"email"`
-	Password   sql.NullString `json:"password"`
 }
 
 func (q *Queries) GetNewestPost(ctx context.Context) (GetNewestPostRow, error) {
@@ -232,7 +277,6 @@ func (q *Queries) GetNewestPost(ctx context.Context) (GetNewestPostRow, error) {
 		&i.UserID,
 		&i.Username,
 		&i.Email,
-		&i.Password,
 	)
 	return i, err
 }
@@ -268,8 +312,7 @@ SELECT posts.post_id,
 	images.file_path, 
 	posts.user_id, 
 	users.username, 
-	users.email, 
-	users.password 
+	users.email
 FROM posts
 LEFT JOIN subolives ON posts.subolive_id = subolives.subolive_id
 LEFT JOIN users ON posts.user_id = users.user_id
@@ -290,7 +333,6 @@ type GetPostRow struct {
 	UserID     int32          `json:"user_id"`
 	Username   sql.NullString `json:"username"`
 	Email      sql.NullString `json:"email"`
-	Password   sql.NullString `json:"password"`
 }
 
 func (q *Queries) GetPost(ctx context.Context, postID int32) (GetPostRow, error) {
@@ -308,7 +350,6 @@ func (q *Queries) GetPost(ctx context.Context, postID int32) (GetPostRow, error)
 		&i.UserID,
 		&i.Username,
 		&i.Email,
-		&i.Password,
 	)
 	return i, err
 }
@@ -324,8 +365,7 @@ SELECT posts.post_id,
 	images.file_path, 
 	posts.user_id, 
 	users.username, 
-	users.email, 
-	users.password 
+	users.email
 FROM posts
 LEFT JOIN subolives ON posts.subolive_id = subolives.subolive_id
 LEFT JOIN users ON posts.user_id = users.user_id
@@ -346,7 +386,6 @@ type GetPostsRow struct {
 	UserID     int32          `json:"user_id"`
 	Username   sql.NullString `json:"username"`
 	Email      sql.NullString `json:"email"`
-	Password   sql.NullString `json:"password"`
 }
 
 func (q *Queries) GetPosts(ctx context.Context, limit int32) ([]GetPostsRow, error) {
@@ -370,7 +409,6 @@ func (q *Queries) GetPosts(ctx context.Context, limit int32) ([]GetPostsRow, err
 			&i.UserID,
 			&i.Username,
 			&i.Email,
-			&i.Password,
 		); err != nil {
 			return nil, err
 		}
@@ -396,8 +434,7 @@ SELECT posts.post_id,
 	images.file_path, 
 	posts.user_id, 
 	users.username, 
-	users.email, 
-	users.password 
+	users.email
 FROM posts
 LEFT JOIN subolives ON posts.subolive_id = subolives.subolive_id
 LEFT JOIN users ON posts.user_id = users.user_id
@@ -425,7 +462,6 @@ type GetSubolivePostsRow struct {
 	UserID     int32          `json:"user_id"`
 	Username   sql.NullString `json:"username"`
 	Email      sql.NullString `json:"email"`
-	Password   sql.NullString `json:"password"`
 }
 
 func (q *Queries) GetSubolivePosts(ctx context.Context, arg GetSubolivePostsParams) ([]GetSubolivePostsRow, error) {
@@ -449,7 +485,6 @@ func (q *Queries) GetSubolivePosts(ctx context.Context, arg GetSubolivePostsPara
 			&i.UserID,
 			&i.Username,
 			&i.Email,
-			&i.Password,
 		); err != nil {
 			return nil, err
 		}

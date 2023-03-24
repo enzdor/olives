@@ -315,21 +315,10 @@ func removeTime(s string) (final string) {
 
 	from := strings.Index(second, ":")
 	to := strings.Index(second, ",")
-	oldTime := second[from+1:to]
+	oldTime := second[from+1 : to]
 
 	arrStrings := strings.Split(second, oldTime)
 	final = first + arrStrings[0] + `"placeholder_date"` + arrStrings[1]
 
 	return final
 }
-
-
-
-
-
-
-
-
-
-
-

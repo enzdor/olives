@@ -5,7 +5,6 @@ A Reddit clone. The back-end will be written in go while the front-end will be m
 ## TODO
 
 - consider switching to uuid instead of a ordered number id so that it is easier to obtain the newest post/comment/user because the id would be first generated in the server, passed to the sqlc query, and the new item created can be called back by their uuid instead of having to get the newest item by the greatest id number
-- find a way to ignore time in tests so that they pass
 - create middleware for endpoints that should only be accessed by admins
 - use sessions. create methods:
 	- new session
@@ -40,8 +39,8 @@ A Reddit clone. The back-end will be written in go while the front-end will be m
 - /getPost/:id                     GET       done            to see the info of a post
 - /deletePost/:id                  DELETE    done            to delete a post (for admins)
 - /createPost                      POST      done            to create a new post
-- /createComment/:postId           POST      next            to create a comment
-- /deleteCooment/:postId           DELETE                    to delete a comment (for admins)
+- /createComment/:postId           POST      done            to create a comment
+- /deleteCooment/:postId           DELETE    done            to delete a comment (for admins)
 - /getUser/:userId                 GET       done            to get user info
 - /createUser                      POST      done            to create a new user
 - /deleteUser/:userId              DELETE    done            to delete an existent user

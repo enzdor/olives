@@ -9,8 +9,7 @@ SELECT posts.post_id,
 	images.file_path, 
 	posts.user_id, 
 	users.username, 
-	users.email, 
-	users.password 
+	users.email
 FROM posts
 LEFT JOIN subolives ON posts.subolive_id = subolives.subolive_id
 LEFT JOIN users ON posts.user_id = users.user_id
@@ -29,8 +28,7 @@ SELECT posts.post_id,
 	images.file_path, 
 	posts.user_id, 
 	users.username, 
-	users.email, 
-	users.password 
+	users.email
 FROM posts
 LEFT JOIN subolives ON posts.subolive_id = subolives.subolive_id
 LEFT JOIN users ON posts.user_id = users.user_id
@@ -49,8 +47,7 @@ SELECT posts.post_id,
 	images.file_path, 
 	posts.user_id, 
 	users.username, 
-	users.email, 
-	users.password 
+	users.email
 FROM posts
 LEFT JOIN subolives ON posts.subolive_id = subolives.subolive_id
 LEFT JOIN users ON posts.user_id = users.user_id
@@ -69,8 +66,7 @@ SELECT posts.post_id,
 	images.file_path, 
 	posts.user_id, 
 	users.username, 
-	users.email, 
-	users.password 
+	users.email
 FROM posts
 LEFT JOIN subolives ON posts.subolive_id = subolives.subolive_id
 LEFT JOIN users ON posts.user_id = users.user_id
@@ -90,6 +86,23 @@ WHERE post_id = ?;
 
 -- name: CountPosts :one
 SELECT COUNT(*) FROM posts;
+
+-- name: GetComment :one
+SELECT comments.comment_id, 
+	comments.text, 
+	comments.created_at, 
+	comments.post_id, 
+	comments.image_id, 
+	images.file_path, 
+	comments.user_id, 
+	users.username, 
+	users.email
+FROM comments
+LEFT JOIN posts ON comments.post_id = posts.post_id
+LEFT JOIN users ON comments.user_id = users.user_id
+LEFT JOIN images ON comments.image_id = images.image_id
+WHERE comment_id = ?
+LIMIT 1;
 
 -- name: CreateComment :execresult
 INSERT INTO posts(text, created_at, user_id, image_id, post_id)

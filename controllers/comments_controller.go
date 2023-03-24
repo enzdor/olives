@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -125,8 +126,8 @@ func (h *Handler) CreateComment(w http.ResponseWriter, r *http.Request) {
 		}
 
 		_, err = h.q.CreateComment(context.Background(), sqlc.CreateCommentParams{
-			Text:       text,
-			UserID:     int32(userId),
+			Text:   text,
+			UserID: int32(userId),
 			ImageID: sql.NullInt32{
 				Int32: img.ImageID,
 				Valid: true,
@@ -157,8 +158,8 @@ func (h *Handler) CreateComment(w http.ResponseWriter, r *http.Request) {
 		errors = errs
 
 		_, err = h.q.CreateComment(context.Background(), sqlc.CreateCommentParams{
-			Text:       text,
-			UserID:     int32(userId),
+			Text:   text,
+			UserID: int32(userId),
 			ImageID: sql.NullInt32{
 				Int32: 0,
 				Valid: false,
@@ -185,4 +186,45 @@ func (h *Handler) CreateComment(w http.ResponseWriter, r *http.Request) {
 
 	utils.NewResponse(w, http.StatusCreated, res)
 	return
+}
+
+func (h *Handler) DeleteComment(w http.ResponseWriter, r *http.Request) {
+	v, err := utils.GetPathValues(strings.Split(r.URL.Path, "/"), 0)
+	if err != nil {
+		utils.NewError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	comment, err := h.q.GetComment(context.Background(), int32(v.Id))
+	if comment.FilePath.Valid {
+		println(comment.FilePath.Valid)
+		println(comment.FilePath.String)
+		if err := os.Remove(comment.FilePath.String); err != nil {
+			utils.NewError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+	}
+
+	exc, err := h.q.DeleteComment(context.Background(), int32(v.Id))
+	if err != nil {
+		if err == sql.ErrNoRows {
+			utils.NewError(w, http.StatusNotFound, err.Error())
+			return
+		}
+
+		utils.NewError(w, http.StatusInternalServerError, "error when deleting comment")
+		return
+	}
+
+	rows, err := exc.RowsAffected()
+	if err != nil {
+		utils.NewError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	if rows < 1 {
+		utils.NewError(w, http.StatusNotFound, sql.ErrNoRows.Error())
+		return
+	}
+
+	utils.NewResponse(w, http.StatusOK, "")
 }

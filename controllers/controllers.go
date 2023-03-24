@@ -147,6 +147,28 @@ func TestPost(t *testing.T, testCases []PostTestCase, controller func(w http.Res
 						t.Errorf("expected response body to be equal to: \n%v\ngot:\n%v", string(resJson), string(resBody))
 						return
 					}
+				case "comment":
+					comment, err := Th.q.GetNewestComment(context.Background())
+					if err != nil {
+						utils.NewError(w, http.StatusInternalServerError, err.Error())
+						return
+					}
+
+					res := consts.ResCreatedComment{
+						Comment:    comment,
+						FormErrors: consts.EmptyCreateCommentErrors,
+					}
+
+					resJson, err := json.Marshal(res)
+					if err != nil {
+						t.Errorf("expected no errors, got %v", err)
+						return
+					}
+
+					if string(resBody) != string(resJson) {
+						t.Errorf("expected response body to be equal to: \n%v\ngot:\n%v", string(resJson), string(resBody))
+						return
+					}
 				}
 			} else {
 				expectedResJson, err := json.Marshal(tc.ExpectedRes)

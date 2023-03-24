@@ -94,16 +94,16 @@ func ValidateNewComment(text string) (errs [2]consts.FormInputError, valid bool)
 	errs = consts.EmptyCreateCommentErrors
 
 	if text == "" {
-		errs[1].Bool = true
-		errs[1].Message = "This field is required"
+		errs[0].Bool = true
+		errs[0].Message = "This field is required"
 		valid = false
 	} else if len(text) < 5 {
-		errs[1].Bool = true
-		errs[1].Message = "This field must be greater than 6 characters"
+		errs[0].Bool = true
+		errs[0].Message = "This field must be greater than 6 characters"
 		valid = false
 	} else if len(text) > 1275 {
-		errs[1].Bool = true
-		errs[1].Message = "This field must have less than 1275 characters"
+		errs[0].Bool = true
+		errs[0].Message = "This field must have less than 1275 characters"
 		valid = false
 	}
 

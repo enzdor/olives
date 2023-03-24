@@ -58,6 +58,11 @@ func TestGetPost(t *testing.T) {
 }
 
 func TestGetSubolivePosts(t *testing.T) {
+	if err := Start(); err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+
 	suboliveId := int32(2)
 	firstPosts, err := Th.q.GetSubolivePosts(context.Background(), sqlc.GetSubolivePostsParams{
 		Offset:     0,
@@ -128,6 +133,11 @@ func TestGetSubolivePosts(t *testing.T) {
 }
 
 func TestCreatePost(t *testing.T) {
+	if err := Start(); err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+
 	newestPost, err := Th.q.GetNewestPost(context.Background())
 	if err != nil {
 		t.Errorf("expected no errors, got %v", err)
@@ -378,6 +388,11 @@ func TestCreatePost(t *testing.T) {
 }
 
 func TestDeletePost(t *testing.T) {
+	if err := Start(); err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+
 	newestPost, err := Th.q.GetNewestPost(context.Background())
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)

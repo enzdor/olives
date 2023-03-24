@@ -55,6 +55,11 @@ func TestGetUser(t *testing.T) {
 }
 
 func TestCreateUser(t *testing.T) {
+	if err := Start(); err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+
 	newestUser, err := Th.q.GetNewestUser(context.Background())
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
@@ -181,6 +186,11 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestDeleteUser(t *testing.T) {
+	if err := Start(); err != nil {
+		t.Errorf("expected no error, got %v", err)
+		return
+	}
+
 	newestUser, err := Th.q.GetNewestUser(context.Background())
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)

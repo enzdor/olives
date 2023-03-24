@@ -303,6 +303,8 @@ func TestCreatePost(t *testing.T) {
 	seventhErrs[2].Bool = true
 	seventhPost := newPost
 	seventhPost.PostID = 0
+	seventhPost.ImageID.Int32 = 0
+	seventhPost.ImageID.Valid = false
 	seventhErrs[2].Message = "File type should be jpeg or png"
 	seventhReq.Header.Set("Content-Type", form7.FormDataContentType())
 	seventhExpectedRes := consts.ResCreatedPost{

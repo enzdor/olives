@@ -11,6 +11,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"strconv"
+	"strings"
 	"testing"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -143,7 +144,7 @@ func TestPost(t *testing.T, testCases []PostTestCase, controller func(w http.Res
 						return
 					}
 
-					if string(resBody) != string(resJson) {
+					if removeTime(string(resBody)) != removeTime(string(resJson)) {
 						t.Errorf("expected response body to be equal to: \n%v\ngot:\n%v", string(resJson), string(resBody))
 						return
 					}
@@ -165,7 +166,7 @@ func TestPost(t *testing.T, testCases []PostTestCase, controller func(w http.Res
 						return
 					}
 
-					if string(resBody) != string(resJson) {
+					if removeTime(string(resBody)) != removeTime(string(resJson)) {
 						t.Errorf("expected response body to be equal to: \n%v\ngot:\n%v", string(resJson), string(resBody))
 						return
 					}
@@ -177,8 +178,8 @@ func TestPost(t *testing.T, testCases []PostTestCase, controller func(w http.Res
 					return
 				}
 
-				if string(resBody) != string(expectedResJson) {
-					t.Errorf("expected response body to be equal to: \n%v\ngot:\n%v", string(expectedResJson), string(resBody))
+				if removeTime(string(resBody)) != removeTime(string(expectedResJson)) {
+					t.Errorf("expected response body to be equal to: \n%v\ngot:\n%v", removeTime(string(expectedResJson)), removeTime(string(resBody)))
 					return
 				}
 			}
@@ -303,3 +304,32 @@ func NewPostRequestComment(c sqlc.Comment, target string) (*http.Request, error)
 
 	return req, nil
 }
+
+func removeTime(s string) (final string) {
+	i := strings.Index(s, `"created_at"`)
+	if i == -1 {
+		return s
+	}
+	first := s[:i]
+	second := s[i:]
+
+	from := strings.Index(second, ":")
+	to := strings.Index(second, ",")
+	oldTime := second[from+1:to]
+
+	arrStrings := strings.Split(second, oldTime)
+	final = first + arrStrings[0] + `"placeholder_date"` + arrStrings[1]
+
+	return final
+}
+
+
+
+
+
+
+
+
+
+
+

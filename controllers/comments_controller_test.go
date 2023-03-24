@@ -99,8 +99,8 @@ func TestCreateComment(t *testing.T) {
 	fourthComment := newComment2
 	fourthComment.Text = "bla"
 	fourthErrs := consts.EmptyCreateCommentErrors
-	fourthErrs[1].Bool = true
-	fourthErrs[1].Message = "This field must be greater than 6 characters"
+	fourthErrs[0].Bool = true
+	fourthErrs[0].Message = "This field must be greater than 6 characters"
 	fourthReq, err := NewPostRequestComment(fourthComment, "/comments")
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
@@ -172,6 +172,8 @@ func TestCreateComment(t *testing.T) {
 	seventhErrs[1].Bool = true
 	seventhComment := newComment
 	seventhComment.CommentID = 0
+	seventhComment.ImageID.Int32 = 0
+	seventhComment.ImageID.Valid = false
 	seventhErrs[1].Message = "File type should be jpeg or png"
 	seventhReq.Header.Set("Content-Type", form7.FormDataContentType())
 	seventhExpectedRes := consts.ResCreatedComment{

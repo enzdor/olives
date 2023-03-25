@@ -34,20 +34,22 @@ func (q *Queries) CountPosts(ctx context.Context) (int64, error) {
 }
 
 const createComment = `-- name: CreateComment :execresult
-INSERT INTO comments(text, created_at, user_id, image_id, post_id)
-VALUES (?, ?, ?, ?, ?)
+INSERT INTO comments(comment_id, text, created_at, user_id, image_id, post_id)
+VALUES (UUID_TO_BIN(?), ?, ?, ?, ?, ?)
 `
 
 type CreateCommentParams struct {
-	Text      string        `json:"text"`
-	CreatedAt time.Time     `json:"created_at"`
-	UserID    int32         `json:"user_id"`
-	ImageID   sql.NullInt32 `json:"image_id"`
-	PostID    int32         `json:"post_id"`
+	UUIDTOBIN string         `json:"UUID_TO_BIN"`
+	Text      string         `json:"text"`
+	CreatedAt time.Time      `json:"created_at"`
+	UserID    string         `json:"user_id"`
+	ImageID   sql.NullString `json:"image_id"`
+	PostID    string         `json:"post_id"`
 }
 
 func (q *Queries) CreateComment(ctx context.Context, arg CreateCommentParams) (sql.Result, error) {
 	return q.db.ExecContext(ctx, createComment,
+		arg.UUIDTOBIN,
 		arg.Text,
 		arg.CreatedAt,
 		arg.UserID,
@@ -57,29 +59,36 @@ func (q *Queries) CreateComment(ctx context.Context, arg CreateCommentParams) (s
 }
 
 const createImage = `-- name: CreateImage :execresult
-INSERT INTO images(file_path)
-VALUES(?)
+INSERT INTO images(image_id, file_path)
+VALUES(UUID_TO_BIN(?), ?)
 `
 
-func (q *Queries) CreateImage(ctx context.Context, filePath string) (sql.Result, error) {
-	return q.db.ExecContext(ctx, createImage, filePath)
+type CreateImageParams struct {
+	UUIDTOBIN string `json:"UUID_TO_BIN"`
+	FilePath  string `json:"file_path"`
+}
+
+func (q *Queries) CreateImage(ctx context.Context, arg CreateImageParams) (sql.Result, error) {
+	return q.db.ExecContext(ctx, createImage, arg.UUIDTOBIN, arg.FilePath)
 }
 
 const createPost = `-- name: CreatePost :execresult
-INSERT INTO posts(title, text, user_id, image_id, subolive_id)
-VALUES (?, ?, ?, ?, ?)
+INSERT INTO posts(post_id, title, text, user_id, image_id, subolive_id)
+VALUES (UAUID_TO_BIN(?), ?, ?, ?, ?, ?)
 `
 
 type CreatePostParams struct {
-	Title      string        `json:"title"`
-	Text       string        `json:"text"`
-	UserID     int32         `json:"user_id"`
-	ImageID    sql.NullInt32 `json:"image_id"`
-	SuboliveID int32         `json:"subolive_id"`
+	UauidToBin interface{}    `json:"uauid_to_bin"`
+	Title      string         `json:"title"`
+	Text       string         `json:"text"`
+	UserID     string         `json:"user_id"`
+	ImageID    sql.NullString `json:"image_id"`
+	SuboliveID string         `json:"subolive_id"`
 }
 
 func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (sql.Result, error) {
 	return q.db.ExecContext(ctx, createPost,
+		arg.UauidToBin,
 		arg.Title,
 		arg.Text,
 		arg.UserID,
@@ -89,28 +98,35 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (sql.Res
 }
 
 const createSubolive = `-- name: CreateSubolive :execresult
-INSERT INTO subolives(name)
-VALUES(?)
+INSERT INTO subolives(subolive_id, name)
+VALUES(UUID_TO_BIN(?), ?)
 `
 
-func (q *Queries) CreateSubolive(ctx context.Context, name string) (sql.Result, error) {
-	return q.db.ExecContext(ctx, createSubolive, name)
+type CreateSuboliveParams struct {
+	UUIDTOBIN string `json:"UUID_TO_BIN"`
+	Name      string `json:"name"`
+}
+
+func (q *Queries) CreateSubolive(ctx context.Context, arg CreateSuboliveParams) (sql.Result, error) {
+	return q.db.ExecContext(ctx, createSubolive, arg.UUIDTOBIN, arg.Name)
 }
 
 const createUser = `-- name: CreateUser :execresult
-INSERT INTO users (email, username, password, admin)
-VALUES (?, ?, ?, ?)
+INSERT INTO users (user_id, email, username, password, admin)
+VALUES (UUID_TO_BIN(?), ?, ?, ?, ?)
 `
 
 type CreateUserParams struct {
-	Email    string `json:"email"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Admin    bool   `json:"admin"`
+	UUIDTOBIN string `json:"UUID_TO_BIN"`
+	Email     string `json:"email"`
+	Username  string `json:"username"`
+	Password  string `json:"password"`
+	Admin     bool   `json:"admin"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (sql.Result, error) {
 	return q.db.ExecContext(ctx, createUser,
+		arg.UUIDTOBIN,
 		arg.Email,
 		arg.Username,
 		arg.Password,
@@ -123,7 +139,7 @@ DELETE FROM comments
 WHERE comment_id = ?
 `
 
-func (q *Queries) DeleteComment(ctx context.Context, commentID int32) (sql.Result, error) {
+func (q *Queries) DeleteComment(ctx context.Context, commentID string) (sql.Result, error) {
 	return q.db.ExecContext(ctx, deleteComment, commentID)
 }
 
@@ -132,7 +148,7 @@ DELETE FROM images
 WHERE image_id = ?
 `
 
-func (q *Queries) DeleteImage(ctx context.Context, imageID int32) (sql.Result, error) {
+func (q *Queries) DeleteImage(ctx context.Context, imageID string) (sql.Result, error) {
 	return q.db.ExecContext(ctx, deleteImage, imageID)
 }
 
@@ -141,7 +157,7 @@ DELETE FROM posts
 WHERE post_id = ?
 `
 
-func (q *Queries) DeletePost(ctx context.Context, postID int32) (sql.Result, error) {
+func (q *Queries) DeletePost(ctx context.Context, postID string) (sql.Result, error) {
 	return q.db.ExecContext(ctx, deletePost, postID)
 }
 
@@ -150,7 +166,7 @@ DELETE FROM users
 WHERE user_id = ?
 `
 
-func (q *Queries) DeleteUser(ctx context.Context, userID int32) (sql.Result, error) {
+func (q *Queries) DeleteUser(ctx context.Context, userID string) (sql.Result, error) {
 	return q.db.ExecContext(ctx, deleteUser, userID)
 }
 
@@ -173,18 +189,18 @@ LIMIT 1
 `
 
 type GetCommentRow struct {
-	CommentID int32          `json:"comment_id"`
+	CommentID string         `json:"comment_id"`
 	Text      string         `json:"text"`
 	CreatedAt time.Time      `json:"created_at"`
-	PostID    int32          `json:"post_id"`
-	ImageID   sql.NullInt32  `json:"image_id"`
+	PostID    string         `json:"post_id"`
+	ImageID   sql.NullString `json:"image_id"`
 	FilePath  sql.NullString `json:"file_path"`
-	UserID    int32          `json:"user_id"`
+	UserID    string         `json:"user_id"`
 	Username  sql.NullString `json:"username"`
 	Email     sql.NullString `json:"email"`
 }
 
-func (q *Queries) GetComment(ctx context.Context, commentID int32) (GetCommentRow, error) {
+func (q *Queries) GetComment(ctx context.Context, commentID string) (GetCommentRow, error) {
 	row := q.db.QueryRowContext(ctx, getComment, commentID)
 	var i GetCommentRow
 	err := row.Scan(
@@ -257,15 +273,15 @@ LIMIT 1
 `
 
 type GetNewestPostRow struct {
-	PostID     int32          `json:"post_id"`
+	PostID     string         `json:"post_id"`
 	Title      string         `json:"title"`
 	Text       string         `json:"text"`
 	CreatedAt  time.Time      `json:"created_at"`
-	SuboliveID int32          `json:"subolive_id"`
+	SuboliveID string         `json:"subolive_id"`
 	Name       sql.NullString `json:"name"`
-	ImageID    sql.NullInt32  `json:"image_id"`
+	ImageID    sql.NullString `json:"image_id"`
 	FilePath   sql.NullString `json:"file_path"`
-	UserID     int32          `json:"user_id"`
+	UserID     string         `json:"user_id"`
 	Username   sql.NullString `json:"username"`
 	Email      sql.NullString `json:"email"`
 }
@@ -330,20 +346,20 @@ LIMIT 1
 `
 
 type GetPostRow struct {
-	PostID     int32          `json:"post_id"`
+	PostID     string         `json:"post_id"`
 	Title      string         `json:"title"`
 	Text       string         `json:"text"`
 	CreatedAt  time.Time      `json:"created_at"`
-	SuboliveID int32          `json:"subolive_id"`
+	SuboliveID string         `json:"subolive_id"`
 	Name       sql.NullString `json:"name"`
-	ImageID    sql.NullInt32  `json:"image_id"`
+	ImageID    sql.NullString `json:"image_id"`
 	FilePath   sql.NullString `json:"file_path"`
-	UserID     int32          `json:"user_id"`
+	UserID     string         `json:"user_id"`
 	Username   sql.NullString `json:"username"`
 	Email      sql.NullString `json:"email"`
 }
 
-func (q *Queries) GetPost(ctx context.Context, postID int32) (GetPostRow, error) {
+func (q *Queries) GetPost(ctx context.Context, postID string) (GetPostRow, error) {
 	row := q.db.QueryRowContext(ctx, getPost, postID)
 	var i GetPostRow
 	err := row.Scan(
@@ -383,15 +399,15 @@ LIMIT ?
 `
 
 type GetPostsRow struct {
-	PostID     int32          `json:"post_id"`
+	PostID     string         `json:"post_id"`
 	Title      string         `json:"title"`
 	Text       string         `json:"text"`
 	CreatedAt  time.Time      `json:"created_at"`
-	SuboliveID int32          `json:"subolive_id"`
+	SuboliveID string         `json:"subolive_id"`
 	Name       sql.NullString `json:"name"`
-	ImageID    sql.NullInt32  `json:"image_id"`
+	ImageID    sql.NullString `json:"image_id"`
 	FilePath   sql.NullString `json:"file_path"`
-	UserID     int32          `json:"user_id"`
+	UserID     string         `json:"user_id"`
 	Username   sql.NullString `json:"username"`
 	Email      sql.NullString `json:"email"`
 }
@@ -454,20 +470,20 @@ OFFSET ?
 `
 
 type GetSubolivePostsParams struct {
-	SuboliveID int32 `json:"subolive_id"`
-	Offset     int32 `json:"offset"`
+	SuboliveID string `json:"subolive_id"`
+	Offset     int32  `json:"offset"`
 }
 
 type GetSubolivePostsRow struct {
-	PostID     int32          `json:"post_id"`
+	PostID     string         `json:"post_id"`
 	Title      string         `json:"title"`
 	Text       string         `json:"text"`
 	CreatedAt  time.Time      `json:"created_at"`
-	SuboliveID int32          `json:"subolive_id"`
+	SuboliveID string         `json:"subolive_id"`
 	Name       sql.NullString `json:"name"`
-	ImageID    sql.NullInt32  `json:"image_id"`
+	ImageID    sql.NullString `json:"image_id"`
 	FilePath   sql.NullString `json:"file_path"`
-	UserID     int32          `json:"user_id"`
+	UserID     string         `json:"user_id"`
 	Username   sql.NullString `json:"username"`
 	Email      sql.NullString `json:"email"`
 }
@@ -540,7 +556,7 @@ WHERE user_id = ?
 LIMIT 1
 `
 
-func (q *Queries) GetUser(ctx context.Context, userID int32) (User, error) {
+func (q *Queries) GetUser(ctx context.Context, userID string) (User, error) {
 	row := q.db.QueryRowContext(ctx, getUser, userID)
 	var i User
 	err := row.Scan(

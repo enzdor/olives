@@ -1,5 +1,5 @@
-insert into subolives (subolive_id, name) values (1, 'music');
-insert into subolives (subolive_id, name) values (2, 'sports');
-insert into subolives (subolive_id, name) values (3, 'tech');
-insert into subolives (subolive_id, name) values (4, 'games');
-insert into subolives (subolive_id, name) values (5, 'news');
+insert into subolives (subolive_id, name) values ('music');
+insert into subolives (subolive_id, name) values ('sports');
+insert into subolives (subolive_id, name) values ('tech');
+insert into subolives (subolive_id, name) values ('games');
+insert into subolives (subolive_id, name) values ('news');

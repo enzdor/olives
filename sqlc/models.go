@@ -10,36 +10,36 @@ import (
 )
 
 type Comment struct {
-	CommentID int32         `json:"comment_id"`
-	Text      string        `json:"text"`
-	CreatedAt time.Time     `json:"created_at"`
-	UserID    int32         `json:"user_id"`
-	ImageID   sql.NullInt32 `json:"image_id"`
-	PostID    int32         `json:"post_id"`
+	CommentID string         `json:"comment_id"`
+	Text      string         `json:"text"`
+	CreatedAt time.Time      `json:"created_at"`
+	UserID    string         `json:"user_id"`
+	ImageID   sql.NullString `json:"image_id"`
+	PostID    string         `json:"post_id"`
 }
 
 type Image struct {
-	ImageID  int32  `json:"image_id"`
+	ImageID  string `json:"image_id"`
 	FilePath string `json:"file_path"`
 }
 
 type Post struct {
-	PostID     int32         `json:"post_id"`
-	Title      string        `json:"title"`
-	Text       string        `json:"text"`
-	CreatedAt  time.Time     `json:"created_at"`
-	SuboliveID int32         `json:"subolive_id"`
-	UserID     int32         `json:"user_id"`
-	ImageID    sql.NullInt32 `json:"image_id"`
+	PostID     string         `json:"post_id"`
+	Title      string         `json:"title"`
+	Text       string         `json:"text"`
+	CreatedAt  time.Time      `json:"created_at"`
+	SuboliveID string         `json:"subolive_id"`
+	UserID     string         `json:"user_id"`
+	ImageID    sql.NullString `json:"image_id"`
 }
 
 type Subolife struct {
-	SuboliveID int32  `json:"subolive_id"`
+	SuboliveID string `json:"subolive_id"`
 	Name       string `json:"name"`
 }
 
 type User struct {
-	UserID   int32  `json:"user_id"`
+	UserID   string `json:"user_id"`
 	Email    string `json:"email"`
 	Username string `json:"username"`
 	Password string `json:"password"`

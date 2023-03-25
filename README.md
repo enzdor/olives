@@ -4,9 +4,7 @@ A Reddit clone. The back-end will be written in go while the front-end will be m
 
 ## TODO
 
-- stuff about UUID: https://www.mysqltutorial.org/mysql-uuid/
 - hash user password before storing it
-- consider switching to uuid instead of a ordered number id so that it is easier to obtain the newest post/comment/user because the id would be first generated in the server, passed to the sqlc query, and the new item created can be called back by their uuid instead of having to get the newest item by the greatest id number
 - create middleware for endpoints that should only be accessed by admins
 - use sessions. create methods:
 	- new session

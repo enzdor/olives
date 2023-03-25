@@ -1,5 +1,5 @@
 -- name: GetPosts :many
-SELECT BIN_TO_UUID(posts.post_id), 
+SELECT posts.post_id, 
 	posts.title, 
 	posts.text, 
 	posts.created_at, 
@@ -77,8 +77,8 @@ LIMIT 10
 OFFSET ?;
 
 -- name: CreatePost :execresult
-INSERT INTO posts(post_id, title, text, user_id, image_id, subolive_id)
-VALUES (UUID_TO_BIN(?), ?, ?, ?, ?, ?);
+INSERT INTO posts(title, text, user_id, image_id, subolive_id)
+VALUES (?, ?, ?, ?, ?);
 
 -- name: DeletePost :execresult
 DELETE FROM posts
@@ -105,8 +105,8 @@ WHERE comment_id = ?
 LIMIT 1;
 
 -- name: CreateComment :execresult
-INSERT INTO comments(comment_id, text, created_at, user_id, image_id, post_id)
-VALUES (UUID_TO_BIN(?), ?, ?, ?, ?, ?);
+INSERT INTO comments(text, created_at, user_id, image_id, post_id)
+VALUES (?, ?, ?, ?, ?);
 
 -- name: DeleteComment :execresult
 DELETE FROM comments
@@ -138,16 +138,16 @@ WHERE user_id = (
 );
 
 -- name: CreateUser :execresult
-INSERT INTO users (user_id, email, username, password, admin)
-VALUES (UUID_TO_BIN(?), ?, ?, ?, ?);
+INSERT INTO users (email, username, password, admin)
+VALUES (?, ?, ?, ?);
 
 -- name: DeleteUser :execresult
 DELETE FROM users
 WHERE user_id = ?;
 
 -- name: CreateImage :execresult
-INSERT INTO images(image_id, file_path)
-VALUES(UUID_TO_BIN(?), ?);
+INSERT INTO images(file_path)
+VALUES(?);
 
 -- name: GetNewestImage :one
 SELECT * FROM images
@@ -163,8 +163,8 @@ WHERE image_id = ?;
 SELECT * FROM subolives;
 
 -- name: CreateSubolive :execresult
-INSERT INTO subolives(subolive_id, name)
-VALUES(UUID_TO_BIN(?), ?);
+INSERT INTO subolives(name)
+VALUES(?);
 
 
 

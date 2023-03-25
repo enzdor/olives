@@ -9,6 +9,7 @@ import (
 	"github.com/jobutterfly/olives/consts"
 	"github.com/jobutterfly/olives/sqlc"
 	"github.com/jobutterfly/olives/utils"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func (h *Handler) GetOrDeleteUser(w http.ResponseWriter, r *http.Request) {
@@ -75,10 +76,19 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	_, err := h.q.CreateUser(context.Background(), sqlc.CreateUserParams{
+
+	hashedPass, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		utils.NewResponse(w, http.StatusInternalServerError, consts.ResCreateUser{
+			User:       consts.EmptyUser,
+			FormErrors: consts.EmptyCreateUserErrors,
+			Error:      err.Error(),
+		})
+	}
+	_, err = h.q.CreateUser(context.Background(), sqlc.CreateUserParams{
 		Email:    email,
 		Username: username,
-		Password: password,
+		Password: string(hashedPass),
 		Admin:    false,
 	})
 	if err != nil {

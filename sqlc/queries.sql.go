@@ -13,11 +13,10 @@ import (
 
 const countComments = `-- name: CountComments :one
 SELECT COUNT(*) FROM comments
-WHERE post_id = ?
 `
 
-func (q *Queries) CountComments(ctx context.Context, postID int32) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countComments, postID)
+func (q *Queries) CountComments(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countComments)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -35,7 +34,7 @@ func (q *Queries) CountPosts(ctx context.Context) (int64, error) {
 }
 
 const createComment = `-- name: CreateComment :execresult
-INSERT INTO posts(text, created_at, user_id, image_id, post_id)
+INSERT INTO comments(text, created_at, user_id, image_id, post_id)
 VALUES (?, ?, ?, ?, ?)
 `
 
@@ -121,11 +120,20 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (sql.Res
 
 const deleteComment = `-- name: DeleteComment :execresult
 DELETE FROM comments
-WHERE post_id = ?
+WHERE comment_id = ?
 `
 
-func (q *Queries) DeleteComment(ctx context.Context, postID int32) (sql.Result, error) {
-	return q.db.ExecContext(ctx, deleteComment, postID)
+func (q *Queries) DeleteComment(ctx context.Context, commentID int32) (sql.Result, error) {
+	return q.db.ExecContext(ctx, deleteComment, commentID)
+}
+
+const deleteImage = `-- name: DeleteImage :execresult
+DELETE FROM images
+WHERE image_id = ?
+`
+
+func (q *Queries) DeleteImage(ctx context.Context, imageID int32) (sql.Result, error) {
+	return q.db.ExecContext(ctx, deleteImage, imageID)
 }
 
 const deletePost = `-- name: DeletePost :execresult

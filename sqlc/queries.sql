@@ -105,16 +105,15 @@ WHERE comment_id = ?
 LIMIT 1;
 
 -- name: CreateComment :execresult
-INSERT INTO posts(text, created_at, user_id, image_id, post_id)
+INSERT INTO comments(text, created_at, user_id, image_id, post_id)
 VALUES (?, ?, ?, ?, ?);
 
 -- name: DeleteComment :execresult
 DELETE FROM comments
-WHERE post_id = ?;
+WHERE comment_id = ?;
 
 -- name: CountComments :one
-SELECT COUNT(*) FROM comments
-WHERE post_id = ?;
+SELECT COUNT(*) FROM comments;
 
 -- name: GetNewestComment :one
 SELECT * FROM comments
@@ -155,6 +154,10 @@ SELECT * FROM images
 WHERE image_id = (
 	SELECT MAX(image_id) FROM images
 );
+
+-- name: DeleteImage :execresult
+DELETE FROM images
+WHERE image_id = ?;
 
 -- name: GetSubolives :many
 SELECT * FROM subolives;

@@ -196,14 +196,6 @@ func (h *Handler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	comment, err := h.q.GetComment(context.Background(), int32(v.Id))
-	if comment.FilePath.Valid {
-		println(comment.FilePath.Valid)
-		println(comment.FilePath.String)
-		if err := os.Remove(comment.FilePath.String); err != nil {
-			utils.NewError(w, http.StatusInternalServerError, err.Error())
-			return
-		}
-	}
 
 	exc, err := h.q.DeleteComment(context.Background(), int32(v.Id))
 	if err != nil {
@@ -224,6 +216,20 @@ func (h *Handler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 	if rows < 1 {
 		utils.NewError(w, http.StatusNotFound, sql.ErrNoRows.Error())
 		return
+	}
+
+	if comment.FilePath.Valid {
+		if err := os.Remove(comment.FilePath.String); err != nil {
+			utils.NewError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		if comment.ImageID.Valid {
+			if _, err := h.q.DeleteImage(context.Background(), comment.ImageID.Int32); err != nil {
+				utils.NewError(w, http.StatusInternalServerError, err.Error())
+				return
+			}
+		}
 	}
 
 	utils.NewResponse(w, http.StatusOK, "")

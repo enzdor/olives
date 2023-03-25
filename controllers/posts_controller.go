@@ -302,12 +302,6 @@ func (h *Handler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	post, err := h.q.GetPost(context.Background(), int32(v.Id))
-	if post.FilePath.Valid {
-		if err := os.Remove(post.FilePath.String); err != nil {
-			utils.NewError(w, http.StatusInternalServerError, err.Error())
-			return
-		}
-	}
 
 	exc, err := h.q.DeletePost(context.Background(), int32(v.Id))
 	if err != nil {
@@ -328,6 +322,20 @@ func (h *Handler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	if rows < 1 {
 		utils.NewError(w, http.StatusNotFound, sql.ErrNoRows.Error())
 		return
+	}
+
+	if post.FilePath.Valid {
+		if err := os.Remove(post.FilePath.String); err != nil {
+			utils.NewError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		if post.ImageID.Valid {
+			if _, err := h.q.DeleteImage(context.Background(), post.ImageID.Int32); err != nil {
+				utils.NewError(w, http.StatusInternalServerError, err.Error())
+				return
+			}
+		}
 	}
 
 	utils.NewResponse(w, http.StatusOK, "")

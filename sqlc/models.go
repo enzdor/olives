@@ -33,6 +33,12 @@ type Post struct {
 	ImageID    sql.NullInt32 `json:"image_id"`
 }
 
+type Session struct {
+	SessionID  string    `json:"session_id"`
+	LastAccess time.Time `json:"last_access"`
+	UserID     int32     `json:"user_id"`
+}
+
 type Subolife struct {
 	SuboliveID int32  `json:"subolive_id"`
 	Name       string `json:"name"`

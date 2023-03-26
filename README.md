@@ -33,17 +33,17 @@ A Reddit clone. The back-end will be written in go while the front-end will be m
 
 ## Back-end endpoints
 
-   ENDPOINT                        METHOD   HANDLER  DONE   Description
+   ENDPOINT                        METHOD   HANDLER  AUTH   Description
 
-- /getSubolivePosts/:id?page=x     GET       done            to get all the posts in a subolive to show in the subolive page (create version of this without including comments for performance or just be lazy and keep this one)
-- /getPost/:id                     GET       done            to see the info of a post
-- /deletePost/:id                  DELETE    done            to delete a post (for admins)
-- /createPost                      POST      done            to create a new post
-- /createComment/:postId           POST      done            to create a comment
-- /deleteCooment/:postId           DELETE    done            to delete a comment (for admins)
-- /getUser/:userId                 GET       done            to get user info
-- /createUser                      POST      done            to create a new user
-- /deleteUser/:userId              DELETE    done            to delete an existent user
+- /getSubolivePosts/:id?page=x     GET       done    n       to get all the posts in a subolive to show in the subolive page (create version of this without including comments for performance or just be lazy and keep this one)
+- /getPost/:id                     GET       done    n       to see the info of a post
+- /deletePost/:id                  DELETE    done    y       to delete a post (for admins)
+- /createPost                      POST      done    y       to create a new post
+- /createComment/:postId           POST      done    y       to create a comment
+- /deleteCooment/:postId           DELETE    done    y       to delete a comment (for admins)
+- /getUser/:userId                 GET       done    n       to get user info
+- /createUser                      POST      done    n       to create a new user
+- /deleteUser/:userId              DELETE    done    y       to delete an existent user
 - /login                           POST                      to login
 - /logout                          GET                       to logout
 

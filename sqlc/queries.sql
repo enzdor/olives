@@ -166,8 +166,29 @@ SELECT * FROM subolives;
 INSERT INTO subolives(name)
 VALUES(?);
 
+-- name: GetSession :one
+SELECT * FROM sessions
+LEFT JOIN users ON sessions.user_id = users.user_id
+WHERE sessions.session_id = ?;
 
+-- name: GetNewestSession :one
+SELECT * FROM sessions
+WHERE session_id = (
+	SELECT MAX(session_id) FROM sessions
+);
 
+-- name: CreateSession :execresult
+INSERT INTO sessions(session_id, user_id)
+VALUES(?, ?);
+
+-- name: UpdateSession :execresult
+UPDATE sessions
+SET last_access = CURRENT_TIMESTAMP()
+WHERE session_id = ?;
+
+-- name: DeleteSession :execresult
+DELETE FROM sessions
+WHERE session_id = ?;
 
 
 

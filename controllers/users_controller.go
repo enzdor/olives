@@ -119,9 +119,31 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	if err := h.Authorizer(r, false); err != nil {
+		utils.NewError(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+
 	v, err := utils.GetPathValues(strings.Split(r.URL.Path, "/"), 0)
 	if err != nil {
 		utils.NewError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	c, err := r.Cookie("sid")
+	if err != nil {
+		utils.NewError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	s, err := h.q.GetSession(context.Background(), c.Value)
+	if err != nil {
+		utils.NewError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if int(s.UserID) != v.Id {
+		utils.NewError(w, http.StatusUnauthorized, "Permission not granted")
 		return
 	}
 

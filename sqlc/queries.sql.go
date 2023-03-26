@@ -88,6 +88,20 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (sql.Res
 	)
 }
 
+const createSession = `-- name: CreateSession :execresult
+INSERT INTO sessions(session_id, user_id)
+VALUES(?, ?)
+`
+
+type CreateSessionParams struct {
+	SessionID string `json:"session_id"`
+	UserID    int32  `json:"user_id"`
+}
+
+func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) (sql.Result, error) {
+	return q.db.ExecContext(ctx, createSession, arg.SessionID, arg.UserID)
+}
+
 const createSubolive = `-- name: CreateSubolive :execresult
 INSERT INTO subolives(name)
 VALUES(?)
@@ -143,6 +157,15 @@ WHERE post_id = ?
 
 func (q *Queries) DeletePost(ctx context.Context, postID int32) (sql.Result, error) {
 	return q.db.ExecContext(ctx, deletePost, postID)
+}
+
+const deleteSession = `-- name: DeleteSession :execresult
+DELETE FROM sessions
+WHERE session_id = ?
+`
+
+func (q *Queries) DeleteSession(ctx context.Context, sessionID string) (sql.Result, error) {
+	return q.db.ExecContext(ctx, deleteSession, sessionID)
 }
 
 const deleteUser = `-- name: DeleteUser :execresult
@@ -289,6 +312,20 @@ func (q *Queries) GetNewestPost(ctx context.Context) (GetNewestPostRow, error) {
 	return i, err
 }
 
+const getNewestSession = `-- name: GetNewestSession :one
+SELECT session_id, last_access, user_id FROM sessions
+WHERE session_id = (
+	SELECT MAX(session_id) FROM sessions
+)
+`
+
+func (q *Queries) GetNewestSession(ctx context.Context) (Session, error) {
+	row := q.db.QueryRowContext(ctx, getNewestSession)
+	var i Session
+	err := row.Scan(&i.SessionID, &i.LastAccess, &i.UserID)
+	return i, err
+}
+
 const getNewestUser = `-- name: GetNewestUser :one
 SELECT user_id, email, username, password, admin FROM users
 WHERE user_id = (
@@ -431,6 +468,39 @@ func (q *Queries) GetPosts(ctx context.Context, limit int32) ([]GetPostsRow, err
 	return items, nil
 }
 
+const getSession = `-- name: GetSession :one
+SELECT session_id, last_access, sessions.user_id, users.user_id, email, username, password, admin FROM sessions
+LEFT JOIN users ON sessions.user_id = users.user_id
+WHERE sessions.session_id = ?
+`
+
+type GetSessionRow struct {
+	SessionID  string         `json:"session_id"`
+	LastAccess time.Time      `json:"last_access"`
+	UserID     int32          `json:"user_id"`
+	UserID_2   sql.NullInt32  `json:"user_id_2"`
+	Email      sql.NullString `json:"email"`
+	Username   sql.NullString `json:"username"`
+	Password   sql.NullString `json:"password"`
+	Admin      sql.NullBool   `json:"admin"`
+}
+
+func (q *Queries) GetSession(ctx context.Context, sessionID string) (GetSessionRow, error) {
+	row := q.db.QueryRowContext(ctx, getSession, sessionID)
+	var i GetSessionRow
+	err := row.Scan(
+		&i.SessionID,
+		&i.LastAccess,
+		&i.UserID,
+		&i.UserID_2,
+		&i.Email,
+		&i.Username,
+		&i.Password,
+		&i.Admin,
+	)
+	return i, err
+}
+
 const getSubolivePosts = `-- name: GetSubolivePosts :many
 SELECT posts.post_id, 
 	posts.title, 
@@ -570,4 +640,14 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.Admin,
 	)
 	return i, err
+}
+
+const updateSession = `-- name: UpdateSession :execresult
+UPDATE sessions
+SET last_access = CURRENT_TIMESTAMP()
+WHERE session_id = ?
+`
+
+func (q *Queries) UpdateSession(ctx context.Context, sessionID string) (sql.Result, error) {
+	return q.db.ExecContext(ctx, updateSession, sessionID)
 }

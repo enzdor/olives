@@ -65,6 +65,17 @@ CREATE TABLE comments (
 		ON DELETE CASCADE
 );
 
+CREATE TABLE sessions (
+	session_id VARCHAR(100) PRIMARY KEY,
+	last_access TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	user_id INT NOT NULL,
+	CONSTRAINT fk_session_user
+		FOREIGN KEY (user_id)
+		REFERENCES users(user_id)
+		ON UPDATE CASCADE
+		ON DELETE CASCADE
+)
+
 
 
 

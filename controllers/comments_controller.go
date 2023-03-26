@@ -15,6 +15,11 @@ import (
 )
 
 func (h *Handler) CreateComment(w http.ResponseWriter, r *http.Request) {
+	if err := h.Authorizer(r, false); err != nil {
+		utils.NewError(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+
 	if r.Method != http.MethodPost {
 		utils.NewResponse(w, http.StatusMethodNotAllowed, consts.ResCreatedComment{
 			Comment:    consts.EmptyComment,
@@ -189,6 +194,11 @@ func (h *Handler) CreateComment(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) DeleteComment(w http.ResponseWriter, r *http.Request) {
+	if err := h.Authorizer(r, true); err != nil {
+		utils.NewError(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+
 	v, err := utils.GetPathValues(strings.Split(r.URL.Path, "/"), 0)
 	if err != nil {
 		utils.NewError(w, http.StatusBadRequest, err.Error())

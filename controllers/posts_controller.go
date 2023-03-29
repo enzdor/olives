@@ -14,20 +14,6 @@ import (
 	"github.com/jobutterfly/olives/utils"
 )
 
-func (h *Handler) GetOrDeletePost(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case "DELETE":
-		h.DeletePost(w, r)
-		return
-	case "GET":
-		h.GetPost(w, r)
-		return
-	default:
-		utils.NewError(w, http.StatusMethodNotAllowed, consts.UnsupportedMethod.Error())
-	}
-
-}
-
 func (h *Handler) GetPost(w http.ResponseWriter, r *http.Request) {
 	v, err := utils.GetPathValues(strings.Split(r.URL.Path, "/"), 0)
 	if err != nil {
@@ -106,11 +92,6 @@ func (h *Handler) GetSubolivePosts(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
-	if err := h.Authorizer(r, false); err != nil {
-		utils.NewError(w, http.StatusUnauthorized, err.Error())
-		return
-	}
-
 	if r.Method != http.MethodPost {
 		utils.NewResponse(w, http.StatusMethodNotAllowed, consts.ResCreatedPost{
 			Post:       consts.EmptyPost,
@@ -300,12 +281,7 @@ func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) DeletePost(w http.ResponseWriter, r *http.Request) {
-	if err := h.Authorizer(r, true); err != nil {
-		utils.NewError(w, http.StatusUnauthorized, err.Error())
-		return
-	}
-
-	v, err := utils.GetPathValues(strings.Split(r.URL.Path, "/"), 0)
+	v, err := utils.GetPathValues(strings.Split(r.URL.Path, "/"), 1)
 	if err != nil {
 		utils.NewError(w, http.StatusBadRequest, err.Error())
 		return

@@ -24,16 +24,24 @@ func main() {
 	db := database.NewDB(user, pass, name)
 	h := controllers.NewHandler(db, "jwtkey")
 
-	http.HandleFunc("/users/", h.GetOrDeleteUser)
-	http.HandleFunc("/users", h.CreateUser)
+	mux := http.NewServeMux()
 
-	http.HandleFunc("/posts/", h.GetOrDeletePost)
-	http.HandleFunc("/posts/subolive/", h.GetSubolivePosts)
+	mux.HandleFunc("/users/", h.GetUser)
+	mux.HandleFunc("/users/delete/", h.AuthMiddleware(h.DeleteUser))
+	mux.HandleFunc("/users/create/", h.AuthMiddleware(h.CreateUser))
 
-	http.HandleFunc("/comments", h.CreateComment)
+	mux.HandleFunc("/posts/create", h.AuthMiddleware(h.CreatePost))
+	mux.HandleFunc("/posts/delete/", h.AuthMiddleware(h.AdminMiddleware(h.DeletePost)))
+	mux.HandleFunc("/posts/", h.GetPost)
+	mux.HandleFunc("/posts/subolive/", h.GetSubolivePosts)
+
+	mux.HandleFunc("/comments/create", h.AuthMiddleware(h.CreateComment))
+	mux.HandleFunc("/comments/delete", h.AuthMiddleware(h.AdminMiddleware(h.DeleteComment)))
+
+	h.ExtenderMiddleware(mux)
 
 	log.Print("Listiening on port :8080")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	if err := http.ListenAndServe(":8080", mux); err != nil {
 		log.Fatal(err)
 	}
 }

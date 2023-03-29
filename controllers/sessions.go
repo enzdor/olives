@@ -2,12 +2,12 @@ package controllers
 
 import (
 	"context"
-	"errors"
 	"net/http"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/jobutterfly/olives/sqlc"
+	"github.com/jobutterfly/olives/utils"
 )
 
 func (h *Handler) CreateSession(userId int32) (string, error) {
@@ -24,34 +24,70 @@ func (h *Handler) CreateSession(userId int32) (string, error) {
 	return sessionId.String(), err
 }
 
-func (h *Handler) Authorizer(r *http.Request, needsAdmin bool) error {
-	c, err := r.Cookie("sid")
-	if err != nil {
-		if err == http.ErrNoCookie {
-			return errors.New("Cookie not found")
-		}
-		return err
-	}
-
-	if needsAdmin {
-		isAdmin, err := h.VerifyAdmin(c.Value)
+func (h *Handler) AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func (w http.ResponseWriter, r *http.Request){
+		c, err := r.Cookie("sid")
 		if err != nil {
-			return err
+			if err == http.ErrNoCookie {
+				utils.NewError(w, http.StatusBadRequest, err.Error())
+			}
+			utils.NewError(w, http.StatusInternalServerError, err.Error())
 		}
-		if !isAdmin {
-			return errors.New("User is not admin")
+
+		valid, err := h.VerifySession(c.Value)
+		if err != nil {
+			utils.NewError(w, http.StatusInternalServerError, err.Error())
 		}
-	}
+		if !valid {
+			utils.NewError(w, http.StatusBadRequest, "invalid session")
+		}
 
-	valid, err := h.VerifySession(c.Value)
-	if err != nil {
-		return err
-	}
-	if !valid {
-		return errors.New("Session expired")
-	}
+		next.ServeHTTP(w, r)
+	}) 
+}
 
-	return nil
+func (h *Handler) AdminMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func (w http.ResponseWriter, r *http.Request) {
+		c, _ := r.Cookie("sid")
+
+		valid, err := h.VerifyAdmin(c.Value)
+		if err != nil {
+			utils.NewError(w, http.StatusInternalServerError, err.Error())
+		}
+
+		if !valid {
+			utils.NewError(w, http.StatusBadRequest, "User not an admin")
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (h *Handler) ExtenderMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func (w http.ResponseWriter, r *http.Request) {
+		c, err := r.Cookie("sid")
+		if err != nil {
+			if err == http.ErrNoCookie {
+				next.ServeHTTP(w, r)
+			}
+			utils.NewError(w, http.StatusInternalServerError, err.Error())
+		}
+
+		valid, err := h.VerifySession(c.Value)
+		if err != nil {
+			utils.NewError(w, http.StatusInternalServerError, err.Error())
+		}
+		if !valid {
+			next.ServeHTTP(w, r)
+		}
+
+		_, err = h.q.UpdateSession(context.Background(), c.Value)
+		if err != nil {
+			utils.NewError(w, http.StatusInternalServerError, err.Error())
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }
 
 func (h *Handler) VerifySession(sessiondId string) (bool, error) {
@@ -85,30 +121,6 @@ func (h *Handler) VerifyAdmin(sessiondId string) (bool, error) {
 	return false, nil
 }
 
-func (h *Handler) ExtendSessionIfExists(r *http.Request) error {
-	c, err := r.Cookie("sid")
-	if err != nil {
-		if err == http.ErrNoCookie {
-			return nil
-		}
-		return err
-	}
-
-	valid, err := h.VerifySession(c.Value)
-	if err != nil {
-		return err
-	}
-	if !valid {
-		return errors.New("Session expired")
-	}
-
-	_, err = h.q.UpdateSession(context.Background(), c.Value)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
 
 
 

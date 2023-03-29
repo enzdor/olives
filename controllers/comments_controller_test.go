@@ -68,7 +68,7 @@ func TestCreateComment(t *testing.T) {
 	pr, pw := io.Pipe()
 	form := multipart.NewWriter(pw)
 	go NewPostRequestCommentImage(t, pw, form, "test.png", newComment)
-	firstReq, err := http.NewRequest(http.MethodPost, "/comments", pr)
+	firstReq, err := http.NewRequest(http.MethodPost, "/comments/create", pr)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 		return
@@ -78,7 +78,7 @@ func TestCreateComment(t *testing.T) {
 	pr2, pw2 := io.Pipe()
 	form2 := multipart.NewWriter(pw2)
 	go NewPostRequestCommentImage(t, pw2, form2, "cheese.png", newComment2)
-	secondReq, err := http.NewRequest(http.MethodPost, "/comments", pr2)
+	secondReq, err := http.NewRequest(http.MethodPost, "/comments/create", pr2)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 		return
@@ -87,7 +87,7 @@ func TestCreateComment(t *testing.T) {
 
 	thirdComment := utils.RandomComment()
 	thirdComment.Text = "this is a valid text"
-	thirdReq, err := NewPostRequestComment(thirdComment, "/comments")
+	thirdReq, err := NewPostRequestComment(thirdComment, "/comments/create")
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 		return
@@ -103,7 +103,7 @@ func TestCreateComment(t *testing.T) {
 	fourthErrs := consts.EmptyCreateCommentErrors
 	fourthErrs[0].Bool = true
 	fourthErrs[0].Message = "This field must be greater than 6 characters"
-	fourthReq, err := NewPostRequestComment(fourthComment, "/comments")
+	fourthReq, err := NewPostRequestComment(fourthComment, "/comments/create")
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 		return
@@ -119,7 +119,7 @@ func TestCreateComment(t *testing.T) {
 	fifthErrs := consts.EmptyCreateCommentErrors
 	fifthErrs[0].Bool = true
 	fifthErrs[0].Message = "This field must have less than 1275 characters"
-	fifthReq, err := NewPostRequestComment(fifthComment, "/comments")
+	fifthReq, err := NewPostRequestComment(fifthComment, "/comments/create")
 	fifthExpectedRes := consts.ResCreatedComment{
 		Comment:    fifthComment,
 		FormErrors: fifthErrs,
@@ -149,7 +149,7 @@ func TestCreateComment(t *testing.T) {
 	form6 := multipart.NewWriter(pw6)
 	go NewPostRequestCommentImage(t, pw6, form6, "test.png", sixthComment)
 
-	sixthReq, err := http.NewRequest(http.MethodPost, "/comments", pr6)
+	sixthReq, err := http.NewRequest(http.MethodPost, "/comments/create", pr6)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 		return
@@ -165,7 +165,7 @@ func TestCreateComment(t *testing.T) {
 	form7 := multipart.NewWriter(pw7)
 	go NewPostRequestCommentImage(t, pw7, form7, "textfile.txt", newComment)
 
-	seventhReq, err := http.NewRequest(http.MethodPost, "/comments", pr7)
+	seventhReq, err := http.NewRequest(http.MethodPost, "/comment/creates", pr7)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 		return
@@ -272,9 +272,9 @@ func TestDeleteComment(t *testing.T) {
 		return
 	}
 
-	firstReq := httptest.NewRequest(http.MethodDelete, "/comments/"+strconv.Itoa(int(newestComment.CommentID)), nil)
-	secondReq := httptest.NewRequest(http.MethodDelete, "/comments/"+strconv.Itoa(1000000), nil)
-	thirdReq := httptest.NewRequest(http.MethodDelete, "/comments/"+strconv.Itoa(int(newestComment.CommentID-1)), nil)
+	firstReq := httptest.NewRequest(http.MethodDelete, "/comments/delete/"+strconv.Itoa(int(newestComment.CommentID)), nil)
+	secondReq := httptest.NewRequest(http.MethodDelete, "/comments/delete/"+strconv.Itoa(1000000), nil)
+	thirdReq := httptest.NewRequest(http.MethodDelete, "/comments/delete/"+strconv.Itoa(int(newestComment.CommentID-1)), nil)
 
 	testCases := []GetTestCase{
 		{

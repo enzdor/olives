@@ -73,7 +73,7 @@ func TestCreateUser(t *testing.T) {
 		FormErrors: consts.EmptyCreateUserErrors,
 		Error:      "",
 	}
-	firstReq, err := NewPostRequestUser(newUser, "/users")
+	firstReq, err := NewPostRequestUser(newUser, "/users/create")
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 		return
@@ -93,7 +93,7 @@ func TestCreateUser(t *testing.T) {
 		FormErrors: secErrs,
 		Error:      "",
 	}
-	secondReq, err := NewPostRequestUser(secondUser, "/users")
+	secondReq, err := NewPostRequestUser(secondUser, "/users/create")
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 		return
@@ -113,7 +113,7 @@ func TestCreateUser(t *testing.T) {
 		FormErrors: thirdErrs,
 		Error:      "",
 	}
-	thirdReq, err := NewPostRequestUser(thirdUser, "/users")
+	thirdReq, err := NewPostRequestUser(thirdUser, "/users/create")
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 		return
@@ -133,7 +133,7 @@ func TestCreateUser(t *testing.T) {
 		FormErrors: fourthErrs,
 		Error:      "",
 	}
-	fourthReq, err := NewPostRequestUser(fourthUser, "/users")
+	fourthReq, err := NewPostRequestUser(fourthUser, "/users/create")
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 		return
@@ -197,8 +197,8 @@ func TestDeleteUser(t *testing.T) {
 		return
 	}
 
-	firstReq := httptest.NewRequest(http.MethodDelete, "/users/"+strconv.Itoa(int(newestUser.UserID)), nil)
-	secondReq := httptest.NewRequest(http.MethodDelete, "/users/"+strconv.Itoa(1000000), nil)
+	firstReq := httptest.NewRequest(http.MethodDelete, "/users/delete/"+strconv.Itoa(int(newestUser.UserID)), nil)
+	secondReq := httptest.NewRequest(http.MethodDelete, "/users/delete/"+strconv.Itoa(1000000), nil)
 
 	testCases := []GetTestCase{
 		{

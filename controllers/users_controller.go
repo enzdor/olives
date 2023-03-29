@@ -12,20 +12,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (h *Handler) GetOrDeleteUser(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case "DELETE":
-		h.DeleteUser(w, r)
-		return
-	case "GET":
-		h.GetUser(w, r)
-		return
-	default:
-		utils.NewError(w, http.StatusMethodNotAllowed, consts.UnsupportedMethod.Error())
-	}
-
-}
-
 func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 	v, err := utils.GetPathValues(strings.Split(r.URL.Path, "/"), 0)
 	if err != nil {
@@ -119,12 +105,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
-	if err := h.Authorizer(r, false); err != nil {
-		utils.NewError(w, http.StatusUnauthorized, err.Error())
-		return
-	}
-
-	v, err := utils.GetPathValues(strings.Split(r.URL.Path, "/"), 0)
+	v, err := utils.GetPathValues(strings.Split(r.URL.Path, "/"), 1)
 	if err != nil {
 		utils.NewError(w, http.StatusBadRequest, err.Error())
 		return

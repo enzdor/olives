@@ -190,7 +190,7 @@ func TestCreatePost(t *testing.T) {
 	pr, pw := io.Pipe()
 	form := multipart.NewWriter(pw)
 	go NewPostRequestPostImage(t, pw, form, "test.png", newPost)
-	firstReq, err := http.NewRequest(http.MethodPost, "/posts", pr)
+	firstReq, err := http.NewRequest(http.MethodPost, "/posts/create", pr)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 		return
@@ -200,7 +200,7 @@ func TestCreatePost(t *testing.T) {
 	pr2, pw2 := io.Pipe()
 	form2 := multipart.NewWriter(pw2)
 	go NewPostRequestPostImage(t, pw2, form2, "cheese.png", newPost2)
-	secondReq, err := http.NewRequest(http.MethodPost, "/posts", pr2)
+	secondReq, err := http.NewRequest(http.MethodPost, "/posts/create", pr2)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 		return
@@ -208,7 +208,7 @@ func TestCreatePost(t *testing.T) {
 	secondReq.Header.Set("Content-Type", form2.FormDataContentType())
 
 	thirdPost := utils.RandomPost()
-	thirdReq, err := NewPostRequestPost(thirdPost, "/posts")
+	thirdReq, err := NewPostRequestPost(thirdPost, "/posts/create")
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 		return
@@ -225,7 +225,7 @@ func TestCreatePost(t *testing.T) {
 	fourthErrs := consts.EmptyCreatePostErrors
 	fourthErrs[1].Bool = true
 	fourthErrs[1].Message = "This field must be greater than 6 characters"
-	fourthReq, err := NewPostRequestPost(fourthPost, "/posts")
+	fourthReq, err := NewPostRequestPost(fourthPost, "/posts/create")
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 		return
@@ -242,7 +242,7 @@ func TestCreatePost(t *testing.T) {
 	fifthErrs := consts.EmptyCreatePostErrors
 	fifthErrs[0].Bool = true
 	fifthErrs[0].Message = "This field must have less than 255 characters"
-	fifthReq, err := NewPostRequestPost(fifthPost, "/posts")
+	fifthReq, err := NewPostRequestPost(fifthPost, "/posts/create")
 	fifthExpectedRes := consts.ResCreatedPost{
 		Post:       fifthPost,
 		FormErrors: fifthErrs,
@@ -278,7 +278,7 @@ func TestCreatePost(t *testing.T) {
 	form6 := multipart.NewWriter(pw6)
 	go NewPostRequestPostImage(t, pw6, form6, "test.png", sixthPost)
 
-	sixthReq, err := http.NewRequest(http.MethodPost, "/posts", pr6)
+	sixthReq, err := http.NewRequest(http.MethodPost, "/posts/create", pr6)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 		return
@@ -294,7 +294,7 @@ func TestCreatePost(t *testing.T) {
 	form7 := multipart.NewWriter(pw7)
 	go NewPostRequestPostImage(t, pw7, form7, "textfile.txt", newPost)
 
-	seventhReq, err := http.NewRequest(http.MethodPost, "/posts", pr7)
+	seventhReq, err := http.NewRequest(http.MethodPost, "/posts/create", pr7)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 		return
@@ -401,9 +401,9 @@ func TestDeletePost(t *testing.T) {
 		return
 	}
 
-	firstReq := httptest.NewRequest(http.MethodDelete, "/posts/"+strconv.Itoa(int(newestPost.PostID)), nil)
-	secondReq := httptest.NewRequest(http.MethodDelete, "/posts/"+strconv.Itoa(1000000), nil)
-	thirdReq := httptest.NewRequest(http.MethodDelete, "/posts/"+strconv.Itoa(int(newestPost.PostID-1)), nil)
+	firstReq := httptest.NewRequest(http.MethodDelete, "/posts/delete/"+strconv.Itoa(int(newestPost.PostID)), nil)
+	secondReq := httptest.NewRequest(http.MethodDelete, "/posts/delete/"+strconv.Itoa(1000000), nil)
+	thirdReq := httptest.NewRequest(http.MethodDelete, "/posts/delete/"+strconv.Itoa(int(newestPost.PostID-1)), nil)
 
 	testCases := []GetTestCase{
 		{

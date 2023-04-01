@@ -1,0 +1,14 @@
+SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE users;
+DROP TABLE images;
+DROP TABLE subolives;
+DROP TABLE comments;
+DROP TABLE posts;
+DROP TABLE sessions;
+source ./sqlc/schema.sql;
+source ./sqlc/mock/users.sql;
+source ./sqlc/mock/images.sql;
+source ./sqlc/mock/subolives.sql;
+source ./sqlc/mock/comments.sql;
+source ./sqlc/mock/posts.sql;
+SET FOREIGN_KEY_CHECKS = 1;

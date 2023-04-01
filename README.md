@@ -4,8 +4,10 @@ A Reddit clone. The back-end will be written in go while the front-end will be m
 
 ## TODO
 
-- hash user password before storing it
-- create middleware for endpoints that should only be accessed by admins
+- error when deleting posts, images are not deleted on delete cascading when they should
+- probably refactor tests for controllers because when invalid field is given, the responsible for that is the validator not the controller
+- add tests for middlewares
+- add middleware for checking if the created item corresponds to the user?
 - use sessions. create methods:
 	- new session
 	- delete session

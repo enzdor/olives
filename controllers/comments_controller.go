@@ -223,13 +223,6 @@ func (h *Handler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 			utils.NewError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
-
-		if comment.ImageID.Valid {
-			if _, err := h.q.DeleteImage(context.Background(), comment.ImageID.Int32); err != nil {
-				utils.NewError(w, http.StatusInternalServerError, err.Error())
-				return
-			}
-		}
 	}
 
 	utils.NewResponse(w, http.StatusOK, "")

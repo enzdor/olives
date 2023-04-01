@@ -296,13 +296,13 @@ func (h *Handler) DeletePost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		utils.NewError(w, http.StatusInternalServerError, "error when deleting post")
+		utils.NewError(w, 1, "error when deleting post")
 		return
 	}
 
 	rows, err := exc.RowsAffected()
 	if err != nil {
-		utils.NewError(w, http.StatusInternalServerError, err.Error())
+		utils.NewError(w, 2, err.Error())
 		return
 	}
 	if rows < 1 {
@@ -312,15 +312,8 @@ func (h *Handler) DeletePost(w http.ResponseWriter, r *http.Request) {
 
 	if post.FilePath.Valid {
 		if err := os.Remove(post.FilePath.String); err != nil {
-			utils.NewError(w, http.StatusInternalServerError, err.Error())
+			utils.NewError(w, 404, err.Error())
 			return
-		}
-
-		if post.ImageID.Valid {
-			if _, err := h.q.DeleteImage(context.Background(), post.ImageID.Int32); err != nil {
-				utils.NewError(w, http.StatusInternalServerError, err.Error())
-				return
-			}
 		}
 	}
 

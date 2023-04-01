@@ -15,7 +15,7 @@ func (h *Handler) CreateSession(userId int32) (string, error) {
 
 	_, err = h.q.CreateSession(context.Background(), sqlc.CreateSessionParams{
 		SessionID: sessionId.String(),
-		UserID: userId,
+		UserID:    userId,
 	})
 	if err != nil {
 		return "", err
@@ -25,7 +25,7 @@ func (h *Handler) CreateSession(userId int32) (string, error) {
 }
 
 func (h *Handler) AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
-	return http.HandlerFunc(func (w http.ResponseWriter, r *http.Request){
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c, err := r.Cookie("sid")
 		if err != nil {
 			if err == http.ErrNoCookie {
@@ -43,11 +43,11 @@ func (h *Handler) AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		}
 
 		next.ServeHTTP(w, r)
-	}) 
+	})
 }
 
 func (h *Handler) AdminMiddleware(next http.HandlerFunc) http.HandlerFunc {
-	return http.HandlerFunc(func (w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c, _ := r.Cookie("sid")
 
 		valid, err := h.VerifyAdmin(c.Value)
@@ -64,7 +64,7 @@ func (h *Handler) AdminMiddleware(next http.HandlerFunc) http.HandlerFunc {
 }
 
 func (h *Handler) ExtenderMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func (w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c, err := r.Cookie("sid")
 		if err != nil {
 			if err == http.ErrNoCookie {
@@ -97,7 +97,7 @@ func (h *Handler) VerifySession(sessiondId string) (bool, error) {
 	}
 
 	now := time.Now()
-	if session.LastAccess.Unix() < now.Add(time.Hour * -24).Unix() {
+	if session.LastAccess.Unix() < now.Add(time.Hour*-24).Unix() {
 		_, err := h.q.DeleteSession(context.Background(), sessiondId)
 		if err != nil {
 			return false, err
@@ -120,15 +120,3 @@ func (h *Handler) VerifyAdmin(sessiondId string) (bool, error) {
 
 	return false, nil
 }
-
-
-
-
-
-
-
-
-
-
-
-
